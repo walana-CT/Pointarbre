@@ -1,0 +1,55 @@
+services:
+  pointarbre_server:
+    container_name: pointarbre_server
+    image: node:20
+    working_dir: /app
+    volumes:
+      - ./pointarbre:/app
+    ports:
+      - "3000:3000"
+    command: sh -c "npm install && npm run dev"
+    env_file:
+      - .env
+    depends_on:
+      pointarbre_postgres:
+        condition: service_healthy
+    networks:
+      - main-network
+
+  pointarbre_postgres:
+    container_name: pointarbre_postgres
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+    networks:
+      - main-network
+    ports:
+      - "5432:5432" # utile en dev pour utiliser un client type DBeaver
+
+  pointarbre_adminer:
+    container_name: pointarbre_adminer
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - main-network
+    depends_on:
+      pointarbre_postgres:
+        condition: service_healthy
+
+networks:
+  main-network:
+
+volumes:
+  postgres_data:
