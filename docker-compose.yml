@@ -1,21 +1,4 @@
 services:
-  pointarbre_server:
-    container_name: pointarbre_server
-    image: node:20
-    working_dir: /app
-    volumes:
-      - ./pointarbre:/app
-    ports:
-      - "3000:3000"
-    command: sh -c "npm install && npm run dev"
-    env_file:
-      - .env
-    depends_on:
-      pointarbre_postgres:
-        condition: service_healthy
-    networks:
-      - main-network
-
   pointarbre_postgres:
     container_name: pointarbre_postgres
     image: postgres:15
@@ -26,15 +9,32 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
-      interval: 2s
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
       timeout: 2s
       retries: 10
     networks:
       - main-network
+
+  pointarbre_server:
+    container_name: pointarbre_server
+    image: node:20
+    working_dir: /app
+    volumes:
+      - ./pointarbre:/app   # ton dossier Next.js
+    command: npm run dev
+    env_file:
+      - .env
+    depends_on:
+      pointarbre_postgres:
+        condition: service_healthy
     ports:
-      - "5432:5432" # utile en dev pour utiliser un client type DBeaver
+      - "3000:3000"
+    networks:
+      - main-network
 
   pointarbre_adminer:
     container_name: pointarbre_adminer
@@ -42,11 +42,11 @@ services:
     restart: always
     ports:
       - 8080:8080
-    networks:
-      - main-network
     depends_on:
       pointarbre_postgres:
         condition: service_healthy
+    networks:
+      - main-network
 
 networks:
   main-network:
