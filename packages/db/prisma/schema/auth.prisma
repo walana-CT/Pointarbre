@@ -1,6 +1,19 @@
+// packages/db/prisma/schema/auth.prisma
+
+enum Role {
+  ADMIN
+  CMO
+  BUCHERON
+}
+
 model User {
   id            String    @id
   name          String
+  firstname     String
+  role          Role
+  ut            UT[]     @relation("UserUTs")
+  agenceId      String?
+  agence        Agence?   @relation(fields: [agenceId], references: [id])
   email         String
   emailVerified Boolean   @default(false)
   image         String?

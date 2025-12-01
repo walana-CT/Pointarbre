@@ -3,7 +3,7 @@ packages:
   - packages/*
 
 catalog:
-  '@prisma/client': ^7.0.0
+  '@prisma/client': 7.0.1
   better-auth: ^1.4.0
   dotenv: ^17.2.2
 
