@@ -1,0 +1,33 @@
+{
+  "name": "pointarbre",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check-types": "turbo check-types",
+    "dev:native": "turbo -F native dev",
+    "dev:web": "turbo -F web dev",
+    "db:push": "turbo -F @pointarbre/db db:push",
+    "db:studio": "turbo -F @pointarbre/db db:studio",
+    "db:generate": "turbo -F @pointarbre/db db:generate",
+    "db:migrate": "turbo -F @pointarbre/db db:migrate",
+    "db:start": "turbo -F @pointarbre/db db:start",
+    "db:watch": "turbo -F @pointarbre/db db:watch",
+    "db:stop": "turbo -F @pointarbre/db db:stop",
+    "db:down": "turbo -F @pointarbre/db db:down"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.4",
+    "@types/node": "^22.13.11"
+  },
+  "packageManager": "pnpm@10.24.0"
+}
