@@ -29,9 +29,17 @@ model UT {
   @@map("ut")
 }
 
+model Triage {
+  id      String   @id @default(cuid())
+  name    String   @unique 
+  forets  Foret[]
+
+  @@map("triage")
+}
+
 model Foret {
   id       String   @id @default(cuid())
-  name     String
+  name     String   @unique
 
   triageId String
   triage   Triage   @relation(fields: [triageId], references: [id])
@@ -48,14 +56,6 @@ model Parcelle {
   foret   Foret  @relation(fields: [foretId], references: [id])
 
   @@map("parcelle")
-}
-
-model Triage {
-  id      String   @id @default(cuid())
-  name    String
-  forets  Foret[]
-
-  @@map("triage")
 }
 
 
