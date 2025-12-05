@@ -1,11 +1,17 @@
 //packages/db/prisma/seed.ts
 import prisma from '../src'
-import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 
+// Better Auth uses PBKDF2, not bcrypt
+const hashPassword = (password: string): string => {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.pbkdf2Sync(password, salt, 100000, 32, 'sha256');
+  return `${salt}:${hash.toString('hex')}`;
+};
 
 async function main() {
   const password = "admin123"
-  const hashed = await bcrypt.hash(password, 10)
+  const hashed = hashPassword(password)
 
   //seeding de triages
   const triage1 = await prisma.triage.upsert({

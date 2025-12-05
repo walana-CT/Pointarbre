@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@pointarbre/config": "workspace:*",
+    "@types/bcrypt": "^6.0.0",
     "@types/pg": "^8.11.11",
     "prisma": "^7.0.1",
     "tsx": "^4.21.0"
