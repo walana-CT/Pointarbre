@@ -1,8 +1,11 @@
 //packages/db/prisma/seed.ts
 import prisma from '../src'
+import bcrypt from 'bcryptjs'
+
 
 async function main() {
-
+  const password = "admin123"
+  const hashed = await bcrypt.hash(password, 10)
 
   //seeding de triages
   const triage1 = await prisma.triage.upsert({
@@ -82,10 +85,34 @@ async function main() {
 
 
   console.log({ triage1, foret_ursprung, foret_bilsteinstal})
-  console.log({ triage1, foret_ursprung, foret_bilsteinstal})
+  console.log({ parcelle1, parcelle2, parcelle3, parcelle4})
 
 
+  const admin = await prisma.user.upsert({
+    where: { email: "admin@example.com" },
+    update: {},
+    create: {
+      id: crypto.randomUUID(),
+      name: "Doe",
+      firstname: "John",
+      role: "ADMIN",
+      email: "admin@example.com",
+      accounts: {
+        create: {
+          id: crypto.randomUUID(),
+          providerId: "credential",        // BetterAuth expects `credential`
+          accountId: "admin@example.com",
+          password: hashed,
+        }
+      },
+    }
+  })
+
+  console.log("Admin created:", admin)
 }
+
+
+
 
 main()
   .then(async () => { await prisma.$disconnect() })

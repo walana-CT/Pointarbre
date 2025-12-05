@@ -7,9 +7,17 @@ export const auth = betterAuth({
 	database: prismaAdapter(prisma, {
 		provider: "postgresql",
 	}),
+
+
+
 	trustedOrigins: [process.env.CORS_ORIGIN || ""],
 	emailAndPassword: {
 		enabled: true,
+		requireEmailVerification: false,
+		sendSignUpEmail: false,
 	},
-  plugins: [nextCookies()]
+
+	secret: process.env.BETTER_AUTH_SECRET,
+  	plugins: [nextCookies()]
 });
+
