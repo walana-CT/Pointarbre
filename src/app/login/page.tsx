@@ -66,7 +66,7 @@ export default function LoginPage() {
                 Entrez vos identifiants pour continuer
               </p>
             </div>
-            <ThemeToggle />
+        
           </div>
 
           {error && (
@@ -105,7 +105,7 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 required
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-[var(--color-text)] placeholder-gray-400 focus:border-[var(--color-secondary)] focus:ring-2 focus:ring-[var(--color-secondary)]"
-                placeholder="••••••••"
+                placeholder="mot de passe"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}

@@ -2,16 +2,20 @@ import type { Metadata } from "next";
 import "@/styles/globals.css";
 import { cookies } from "next/headers";
 import ThemeToggle from "@/components/ThemeToggle";
+import LogoutButton from "@/components/LogoutButton";
 import Link from "next/link";
+import { getUserFromToken } from "@/lib/auth";
 
 export const metadata: Metadata = {
-  title: "Mon Site Web",
+  title: "Pointarbre",
   description: "Construit avec Next.js, React, Prisma et PostgreSQL",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
   const themeCookie = cookieStore.get("theme")?.value ?? "light";
+  const sessionToken = cookieStore.get("session")?.value;
+  const user = sessionToken ? await getUserFromToken(sessionToken) : null;
 
   return (
     <html lang="fr" className={`theme-${themeCookie}`}>
@@ -28,9 +32,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
             <div className="flex items-center gap-3">
               <ThemeToggle />
-              <Link href="/login" className="btn-secondary">
-                Se connecter
-              </Link>
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <div className="text-sm">
+                    <div className="font-medium">{user.name ?? user.email}</div>
+                    <div className="text-xs text-[var(--color-muted)]">{user.email}</div>
+                  </div>
+                  <LogoutButton />
+                </div>
+              ) : (
+                <Link href="/login" className="btn-secondary">
+                  Se connecter
+                </Link>
+              )}
             </div>
           </div>
         </header>

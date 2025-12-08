@@ -1,6 +1,17 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { getUserFromToken } from "@/lib/auth";
 import Link from "next/link";
 
-export default function Home() {
+export default async function Home() {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get("session")?.value;
+  const user = sessionToken ? await getUserFromToken(sessionToken) : null;
+
+  if (!user) {
+    return redirect("/login");
+  }
+
   return (
     <div className="max-w-2xl mx-auto">
       {/* Header */}
