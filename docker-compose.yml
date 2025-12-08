@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nextjs_postgres
+    environment:
+      POSTGRES_USER: fagus
+      POSTGRES_PASSWORD: sylvatica
+      POSTGRES_DB: pointarbre_db
+    ports:
+      - "5432:5432"
+    volumes:
+      # Persiste les données de la base de données
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nextjs_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fagus"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  nextjs_network:
+    driver: bridge

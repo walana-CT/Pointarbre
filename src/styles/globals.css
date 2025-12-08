@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Personnalisations de base si nécessaire */
+}
+
+@layer components {
+  /* Composants réutilisables */
+  .btn-primary {
+    @apply px-4 py-2 rounded-lg transition-colors;
+    background-color: var(--color-primary);
+    color: var(--color-bg);
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 rounded-lg transition-colors;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+  }
+}
+
+/* Theme variables for light / dark / accessible themes
+   Use classes on <html> like `theme-light`, `theme-dark`, `theme-accessible`.
+   Components should use the CSS variables, e.g. `bg-[var(--color-primary)]`.
+*/
+
+:root {
+  /* default to light */
+  --color-primary: #3f6b4f;
+  --color-secondary: #7aa179;
+  --color-bg: #ffffff;
+  --color-surface: #f6f7f6;
+  --color-text: #0b2b18;
+  --color-muted: #9ea79e;
+  --color-accent: #9fb8ad;
+  --color-success: #1f8a3d;
+  --color-danger: #d9534f;
+}
+
+.theme-light {
+  --color-primary: #3f6b4f;
+  --color-secondary: #7aa179;
+  --color-bg: #ffffff;
+  --color-surface: #f6f7f6;
+  --color-text: #0b2b18;
+  --color-muted: #9ea79e;
+  --color-accent: #9fb8ad;
+  --color-success: #1f8a3d;
+  --color-danger: #d9534f;
+}
+
+.theme-dark {
+  --color-primary: #2f4f36;
+  --color-secondary: #3f6b4f;
+  --color-bg: #07120d;
+  --color-surface: #0b1a12;
+  --color-text: #e6efe8;
+  --color-muted: #7a8878;
+  --color-accent: #6fa38f;
+  --color-success: #2ea44f;
+  --color-danger: #ff6b6b;
+}
+
+.theme-accessible {
+  --color-primary: #006400;
+  --color-secondary: #004d00;
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-text: #000000;
+  --color-muted: #666666;
+  --color-accent: #ffb703;
+  --color-success: #007a3d;
+  --color-danger: #b00020;
+}
+
+/* Utilities fallback for inputs/buttons to ensure focus rings are visible */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+}
