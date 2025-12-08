@@ -20,6 +20,12 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   sessions     Session[]
+
+  ut            UT[]     @relation("UserUTs")
+  agenceId      String?
+  agence        Agence?   @relation(fields: [agenceId], references: [id])
+
+  @@map("user")
 }
 
 model Session {
@@ -29,10 +35,103 @@ model Session {
   tokenHash String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
+
+  @@map("session")
 }
 
 enum Role {
   ADMIN
   CMO
   OUVRIER
+}
+
+model Agence {
+  id    String   @id @default(cuid())
+  name  String
+  uts   UT[]     @relation("AgenceUTs")
+  users User[]
+
+  @@map("agence")
+}
+
+model UT {
+  id       String    @id @default(cuid())
+  number   String
+  agences  Agence[]  @relation("AgenceUTs")
+  users  User[] @relation("UserUTs")
+
+  @@map("ut")
+}
+
+model Triage {
+  id      String   @id @default(cuid())
+  name    String   @unique 
+  forets  Foret[]
+
+  @@map("triage")
+}
+
+model Foret {
+  id       String   @id @default(cuid())
+  name     String   @unique
+
+  triageId String
+  triage   Triage   @relation(fields: [triageId], references: [id])
+
+  parcelles Parcelle[]
+
+  @@map("foret")
+}
+
+model Parcelle {
+  id      String @id @default(cuid())
+  name    String
+  foretId String
+  foret   Foret  @relation(fields: [foretId], references: [id])
+
+  @@map("parcelle")
+}
+
+
+model Chantier {
+  id            String   @id @default(cuid())
+  date_debut    DateTime
+  date_fin      DateTime
+  date_cloture  DateTime
+  foret         String
+  triage        String
+  parcelle      String
+
+  jours         Jour[]
+
+  @@map("chantier")
+}
+
+model Jour {
+  id                 String   @id @default(cuid())
+  
+  chantierId         String
+  chantier           Chantier @relation(fields: [chantierId], references: [id])
+  
+  phases             Phase[]
+  date               DateTime
+  h_rendement        Int?
+  location_materiel  Int?
+  ind_kilometrique   Int?
+  transport_materiel Boolean
+  panier             Boolean
+
+  @@map("jour")
+}
+
+model Phase {
+  id        String   @id @default(cuid())
+
+  jourId    String
+  jour      Jour @relation(fields: [jourId], references: [id])
+
+  type      String
+  duree     DateTime
+
+  @@map("phase")
 }
