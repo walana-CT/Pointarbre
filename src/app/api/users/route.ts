@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { hashPassword } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -24,7 +25,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, name } = body;
+    const { email, name, password } = body;
 
     // Validation
     if (!email) {
@@ -40,11 +41,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Cet email existe déjà" }, { status: 409 });
     }
 
+    // Valider le mot de passe
+    if (!password) {
+      return NextResponse.json({ error: "Password requis" }, { status: 400 });
+    }
+
+    const passwordHash = await hashPassword(password);
+
     // Créer l'utilisateur
     const user = await prisma.user.create({
       data: {
         email,
         name: name || null,
+        passwordHash,
       },
     });
 

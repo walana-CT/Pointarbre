@@ -2,6 +2,7 @@
 // Exécutez ceci pour vérifier que Prisma fonctionne
 
 import { prisma } from "@/lib/db";
+import { hashPassword } from "@/lib/auth";
 
 async function main() {
   console.log("🧪 Test de connexion Prisma...");
@@ -12,12 +13,15 @@ async function main() {
     const count = await prisma.user.count();
     console.log(`  → ${count} utilisateurs trouvés`);
 
-    // Test 2: Créer un utilisateur
+    // Test 2: Créer un utilisateur (avec passwordHash requis)
     console.log("✓ Étape 2: Créer un utilisateur...");
+    const tempPassword = `test-pass-${Date.now()}`;
+    const passwordHash = await hashPassword(tempPassword);
     const newUser = await prisma.user.create({
       data: {
         email: `test-${Date.now()}@example.com`,
         name: "Test User",
+        passwordHash,
       },
     });
     console.log(`  → Utilisateur créé: ${newUser.email}`);
@@ -29,7 +33,7 @@ async function main() {
       orderBy: { createdAt: "desc" },
     });
     console.log(`  → ${users.length} utilisateur(s) récupéré(s)`);
-    users.forEach((u) => {
+    users.forEach((u: any) => {
       console.log(`     - ${u.email} (${u.name})`);
     });
 
