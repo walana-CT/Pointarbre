@@ -175,7 +175,9 @@ export default function ChantiersPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Mes chantiers</h1>
+          <h1 className="text-[var(--color-text-secondary)] text-3xl sm:text-4xl font-bold mb-2">
+            Mes chantiers
+          </h1>
           <p className="text-[var(--color-muted)]">
             {chantiers.length} chantier{chantiers.length > 1 ? "s" : ""}
           </p>
@@ -327,8 +329,10 @@ export default function ChantiersPage() {
               }}
             >
               <div className="mb-3">
-                <h3 className="font-semibold text-lg mb-1">{chantier.foret}</h3>
-                <p className="text-sm text-[var(--color-muted)]">
+                <h3 className="font-semibold text-lg mb-1 text-[var(--color-text-secondary)]">
+                  {chantier.foret}
+                </h3>
+                <p className="text-sm text-[var(--color-text)]">
                   {chantier.triage} - {chantier.parcelle}
                 </p>
               </div>

@@ -37,7 +37,11 @@ export default function ThemeToggle() {
       aria-label={`Passer au thème ${theme === "light" ? "sombre" : "clair"}`}
       title={`Thème ${theme === "light" ? "sombre" : "clair"}`}
     >
-      {theme === "light" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+      {theme === "light" ? (
+        <Moon className="w-5 h-5 sm:w-6 sm:h-6" />
+      ) : (
+        <Sun className="w-5 h-5 sm:w-6 sm:h-6" />
+      )}
     </button>
   );
 }

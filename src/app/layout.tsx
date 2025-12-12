@@ -26,7 +26,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         >
           <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between gap-2">
             <div className="flex items-center gap-3">
-              <Link href="/" className="text-base sm:text-lg font-semibold">
+              <Link href="/" className="text-[var(--color-text-secondary)] text-xl sm:text-2xl font-semibold">
                 POINTARBRE
               </Link>
             </div>

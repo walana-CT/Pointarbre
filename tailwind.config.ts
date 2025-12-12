@@ -12,11 +12,12 @@ const config: Config = {
           secondary: "#7aa179",
           background: "#ffffff",
           surface: "#f6f7f6",
-          text: "#0b2b18",
-          muted: "#9ea79e",
+          text: "#010703ff",
+          textSecondary: "#115a30",
+          muted: "#829182",
           accent: "#9fb8ad",
           success: "#1f8a3d",
-          danger: "#d9534f",
+          danger: "#c74641",
         },
 
         dark: {
@@ -25,6 +26,7 @@ const config: Config = {
           background: "#07120d",
           surface: "#0b1a12",
           text: "#e6efe8",
+          textSecondary: "#c8d4ca",
           muted: "#7a8878",
           accent: "#6fa38f",
           success: "#2ea44f",
@@ -37,6 +39,7 @@ const config: Config = {
           background: "#ffffff",
           surface: "#ffffff",
           text: "#000000",
+          textSecondary: "#333333",
           muted: "#666666",
           accent: "#ffb703", // yellow accent for visibility
           success: "#007a3d",
