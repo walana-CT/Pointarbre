@@ -21,9 +21,10 @@ model User {
   updatedAt    DateTime @updatedAt
   sessions     Session[]
 
-  ut            UT[]     @relation("UserUTs")
+  ut            UT[]       @relation("UserUTs")
   agenceId      String?
-  agence        Agence?   @relation(fields: [agenceId], references: [id])
+  agence        Agence?    @relation(fields: [agenceId], references: [id])
+  chantiers     Chantier[]
 
   @@map("user")
 }
@@ -96,11 +97,14 @@ model Parcelle {
 model Chantier {
   id            String   @id @default(cuid())
   date_debut    DateTime
-  date_fin      DateTime
-  date_cloture  DateTime
+  date_fin      DateTime?
+  date_cloture  DateTime?
   foret         String
   triage        String
   parcelle      String
+
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   jours         Jour[]
 

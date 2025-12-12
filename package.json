@@ -4,7 +4,7 @@
   "description": "Modern Next.js with Prisma and PostgreSQL stack",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --hostname 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
