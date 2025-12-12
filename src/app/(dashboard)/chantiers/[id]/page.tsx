@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Plus, ArrowLeft } from "lucide-react";
 
 type Phase = {
@@ -32,8 +32,15 @@ type Chantier = {
   parcelle: string;
 };
 
+type TypePhase = {
+  id: string;
+  name: string;
+  description: string | null;
+};
+
 export default function ChantierDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const chantierId = params.id as string;
 
   const [chantier, setChantier] = useState<Chantier | null>(null);
@@ -41,11 +48,17 @@ export default function ChantierDetailPage() {
   const [loading, setLoading] = useState(true);
   const [expandedJourId, setExpandedJourId] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showPhaseForm, setShowPhaseForm] = useState<string | null>(null);
+  const [typesPhases, setTypesPhases] = useState<TypePhase[]>([]);
 
   useEffect(() => {
     fetchChantier();
     fetchJours();
   }, [chantierId]);
+
+  useEffect(() => {
+    fetchTypesPhases();
+  }, []);
 
   async function fetchChantier() {
     try {
@@ -70,6 +83,18 @@ export default function ChantierDetailPage() {
       console.error("Erreur chargement jours:", error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchTypesPhases() {
+    try {
+      const res = await fetch("/api/types-phases");
+      if (res.ok) {
+        const data = await res.json();
+        setTypesPhases(data);
+      }
+    } catch (error) {
+      console.error("Erreur chargement types phases:", error);
     }
   }
 
@@ -185,6 +210,85 @@ export default function ChantierDetailPage() {
     }
   }
 
+  async function handleFinalizeChantier() {
+    if (
+      !confirm(
+        "Êtes-vous sûr de vouloir finaliser ce chantier ? La date de fin sera fixée au jour le plus récent."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/chantiers/${chantierId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "finalize" }),
+      });
+
+      if (res.ok) {
+        router.push("/chantiers");
+      } else {
+        const data = await res.json();
+        alert(data.error || "Erreur lors de la finalisation");
+      }
+    } catch (error) {
+      console.error("Erreur finalisation chantier:", error);
+      alert("Erreur serveur");
+    }
+  }
+
+  async function handleCreatePhase(jourId: string, e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
+    try {
+      const res = await fetch(`/api/jours/${jourId}/phases`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: formData.get("type"),
+          hours: formData.get("hours"),
+          minutes: formData.get("minutes"),
+        }),
+      });
+
+      if (res.ok) {
+        setShowPhaseForm(null);
+        fetchJours();
+        (e.target as HTMLFormElement).reset();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Erreur lors de la création");
+      }
+    } catch (error) {
+      console.error("Erreur création phase:", error);
+      alert("Erreur serveur");
+    }
+  }
+
+  async function handleDeletePhase(phaseId: string) {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette phase ?")) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/phases/${phaseId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        fetchJours();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Erreur lors de la suppression");
+      }
+    } catch (error) {
+      console.error("Erreur suppression phase:", error);
+      alert("Erreur serveur");
+    }
+  }
+
   function calculateTotalDuration(phases: Phase[]): string {
     if (phases.length === 0) return "0h00";
 
@@ -265,13 +369,23 @@ export default function ChantierDetailPage() {
             {jours.length} jour{jours.length > 1 ? "s" : ""} enregistré{jours.length > 1 ? "s" : ""}
           </p>
         </div>
-        <button
-          onClick={() => setShowCreateForm(true)}
-          className="btn-primary flex items-center gap-2 justify-center"
-        >
-          <Plus className="w-5 h-5" />
-          Nouveau jour
-        </button>
+        <div className="flex gap-3">
+          {!chantier.date_fin && jours.length > 0 && (
+            <button
+              onClick={handleFinalizeChantier}
+              className="btn-secondary flex items-center gap-2 justify-center"
+            >
+              Finir chantier
+            </button>
+          )}
+          <button
+            onClick={() => setShowCreateForm(true)}
+            className="btn-primary flex items-center gap-2 justify-center"
+          >
+            <Plus className="w-5 h-5" />
+            Nouveau jour
+          </button>
+        </div>
       </div>
 
       {/* Formulaire de création */}
@@ -577,10 +691,103 @@ export default function ChantierDetailPage() {
                           Phases ({jour.phases.length}) - Durée totale:{" "}
                           {calculateTotalDuration(jour.phases)}
                         </h4>
-                        <Link href={`/jours/${jour.id}/phases`} className="btn-secondary text-sm">
-                          Gérer les phases
-                        </Link>
+                        <button
+                          onClick={() =>
+                            setShowPhaseForm(showPhaseForm === jour.id ? null : jour.id)
+                          }
+                          className="btn-primary text-sm flex items-center gap-1"
+                        >
+                          <Plus className="w-4 h-4" />
+                          Ajouter phase
+                        </button>
                       </div>
+
+                      {/* Formulaire d'ajout de phase */}
+                      {showPhaseForm === jour.id && (
+                        <div
+                          className="mb-4 p-4 rounded-lg border"
+                          style={{
+                            backgroundColor: "var(--color-bg)",
+                            borderColor: "var(--color-muted)",
+                          }}
+                        >
+                          <form
+                            onSubmit={(e) => handleCreatePhase(jour.id, e)}
+                            className="space-y-3"
+                          >
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              <div>
+                                <label className="block text-sm font-medium mb-1">Type *</label>
+                                <select
+                                  name="type"
+                                  required
+                                  className="w-full px-3 py-2 rounded-lg border"
+                                  style={{
+                                    backgroundColor: "var(--color-surface)",
+                                    borderColor: "var(--color-muted)",
+                                  }}
+                                >
+                                  <option value="">Sélectionner un type</option>
+                                  {typesPhases.map((tp) => (
+                                    <option key={tp.id} value={tp.name}>
+                                      {tp.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <div>
+                                <label className="block text-sm font-medium mb-1">Heures *</label>
+                                <input
+                                  type="number"
+                                  name="hours"
+                                  required
+                                  min="0"
+                                  max="23"
+                                  defaultValue="0"
+                                  className="w-full px-3 py-2 rounded-lg border"
+                                  style={{
+                                    backgroundColor: "var(--color-surface)",
+                                    borderColor: "var(--color-muted)",
+                                  }}
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-sm font-medium mb-1">Minutes *</label>
+                                <input
+                                  type="number"
+                                  name="minutes"
+                                  required
+                                  min="0"
+                                  max="59"
+                                  defaultValue="0"
+                                  className="w-full px-3 py-2 rounded-lg border"
+                                  style={{
+                                    backgroundColor: "var(--color-surface)",
+                                    borderColor: "var(--color-muted)",
+                                  }}
+                                />
+                              </div>
+                            </div>
+
+                            <div className="flex gap-2 justify-end">
+                              <button
+                                type="button"
+                                onClick={() => setShowPhaseForm(null)}
+                                className="btn-secondary text-sm"
+                              >
+                                Annuler
+                              </button>
+                              <button type="submit" className="btn-primary text-sm">
+                                Ajouter
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      )}
+
+                      {/* Liste des phases */}
                       {jour.phases.length > 0 && (
                         <div className="space-y-2">
                           {jour.phases.map((phase) => {
@@ -590,13 +797,22 @@ export default function ChantierDetailPage() {
                             return (
                               <div
                                 key={phase.id}
-                                className="flex justify-between items-center text-sm p-2 rounded"
+                                className="flex justify-between items-center text-sm p-2 rounded group"
                                 style={{ backgroundColor: "var(--color-bg)" }}
                               >
                                 <span>{phase.type}</span>
-                                <span className="font-medium">
-                                  {hours}h{minutes.toString().padStart(2, "0")}
-                                </span>
+                                <div className="flex items-center gap-3">
+                                  <span className="font-medium">
+                                    {hours}h{minutes.toString().padStart(2, "0")}
+                                  </span>
+                                  <button
+                                    onClick={() => handleDeletePhase(phase.id)}
+                                    className="opacity-0 group-hover:opacity-100 text-[var(--color-danger)] hover:text-red-700 transition-opacity"
+                                    title="Supprimer"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
                               </div>
                             );
                           })}
