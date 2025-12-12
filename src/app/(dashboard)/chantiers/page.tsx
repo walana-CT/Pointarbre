@@ -15,14 +15,43 @@ type Chantier = {
   jours: { id: string }[];
 };
 
+type Foret = { id: string; name: string; triageId: string };
+type Triage = { id: string; name: string };
+type Parcelle = { id: string; name: string; foretId: string };
+
 export default function ChantiersPage() {
   const [chantiers, setChantiers] = useState<Chantier[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
+  const [triages, setTriages] = useState<Triage[]>([]);
+  const [forets, setForets] = useState<Foret[]>([]);
+  const [parcelles, setParcelles] = useState<Parcelle[]>([]);
+
+  const [selectedTriage, setSelectedTriage] = useState("");
+  const [selectedForet, setSelectedForet] = useState("");
+
   useEffect(() => {
     fetchChantiers();
+    fetchTriages();
   }, []);
+
+  useEffect(() => {
+    if (selectedTriage) {
+      fetchForetsByTriage(selectedTriage);
+    } else {
+      setForets([]);
+      setSelectedForet("");
+    }
+  }, [selectedTriage]);
+
+  useEffect(() => {
+    if (selectedForet) {
+      fetchParcellesByForet(selectedForet);
+    } else {
+      setParcelles([]);
+    }
+  }, [selectedForet]);
 
   async function fetchChantiers() {
     try {
@@ -38,9 +67,53 @@ export default function ChantiersPage() {
     }
   }
 
+  async function fetchTriages() {
+    try {
+      const res = await fetch("/api/triages");
+      if (res.ok) {
+        const data = await res.json();
+        setTriages(data);
+      }
+    } catch (error) {
+      console.error("Erreur chargement triages:", error);
+    }
+  }
+
+  async function fetchForetsByTriage(triageId: string) {
+    try {
+      const res = await fetch(`/api/forets?triageId=${triageId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setForets(data);
+      }
+    } catch (error) {
+      console.error("Erreur chargement forêts:", error);
+    }
+  }
+
+  async function fetchParcellesByForet(foretId: string) {
+    try {
+      const res = await fetch(`/api/parcelles?foretId=${foretId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setParcelles(data);
+      }
+    } catch (error) {
+      console.error("Erreur chargement parcelles:", error);
+    }
+  }
+
   async function handleCreateChantier(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+
+    const triageId = formData.get("triage") as string;
+    const foretId = formData.get("foret") as string;
+    const parcelleId = formData.get("parcelle") as string;
+
+    const triage = triages.find((t) => t.id === triageId);
+    const foret = forets.find((f) => f.id === foretId);
+    const parcelle = parcelles.find((p) => p.id === parcelleId);
 
     try {
       const res = await fetch("/api/chantiers", {
@@ -48,11 +121,9 @@ export default function ChantiersPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           date_debut: formData.get("date_debut"),
-          date_fin: formData.get("date_fin"),
-          date_cloture: formData.get("date_cloture"),
-          foret: formData.get("foret"),
-          triage: formData.get("triage"),
-          parcelle: formData.get("parcelle"),
+          foret: foret?.name || "",
+          triage: triage?.name || "",
+          parcelle: parcelle?.name || "",
         }),
       });
 
@@ -60,6 +131,8 @@ export default function ChantiersPage() {
         setShowForm(false);
         fetchChantiers();
         (e.target as HTMLFormElement).reset();
+        setSelectedTriage("");
+        setSelectedForet("");
       } else {
         const data = await res.json();
         alert(data.error || "Erreur lors de la création");
@@ -105,13 +178,14 @@ export default function ChantiersPage() {
         >
           <h2 className="text-xl font-semibold mb-4">Créer un nouveau chantier</h2>
           <form onSubmit={handleCreateChantier} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Date début *</label>
+                <label className="block text-sm font-medium mb-1">Date début</label>
                 <input
                   type="date"
                   name="date_debut"
                   required
+                  defaultValue={new Date().toISOString().split("T")[0]}
                   className="w-full px-3 py-2 rounded-lg border"
                   style={{
                     backgroundColor: "var(--color-bg)",
@@ -121,75 +195,69 @@ export default function ChantiersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Date fin *</label>
-                <input
-                  type="date"
-                  name="date_fin"
-                  required
-                  className="w-full px-3 py-2 rounded-lg border"
-                  style={{
-                    backgroundColor: "var(--color-bg)",
-                    borderColor: "var(--color-muted)",
-                  }}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Date clôture</label>
-                <input
-                  type="date"
-                  name="date_cloture"
-                  className="w-full px-3 py-2 rounded-lg border"
-                  style={{
-                    backgroundColor: "var(--color-bg)",
-                    borderColor: "var(--color-muted)",
-                  }}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Forêt *</label>
-                <input
-                  type="text"
-                  name="foret"
-                  required
-                  placeholder="Nom de la forêt"
-                  className="w-full px-3 py-2 rounded-lg border"
-                  style={{
-                    backgroundColor: "var(--color-bg)",
-                    borderColor: "var(--color-muted)",
-                  }}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Triage *</label>
-                <input
-                  type="text"
+                <label className="block text-sm font-medium mb-1">Triage</label>
+                <select
                   name="triage"
                   required
-                  placeholder="Nom du triage"
+                  value={selectedTriage}
+                  onChange={(e) => setSelectedTriage(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border"
                   style={{
                     backgroundColor: "var(--color-bg)",
                     borderColor: "var(--color-muted)",
                   }}
-                />
+                >
+                  <option value="">Sélectionner un triage</option>
+                  {triages.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Parcelle *</label>
-                <input
-                  type="text"
-                  name="parcelle"
+                <label className="block text-sm font-medium mb-1">Forêt</label>
+                <select
+                  name="foret"
                   required
-                  placeholder="Nom de la parcelle"
-                  className="w-full px-3 py-2 rounded-lg border"
+                  value={selectedForet}
+                  onChange={(e) => setSelectedForet(e.target.value)}
+                  disabled={!selectedTriage}
+                  className="w-full px-3 py-2 rounded-lg border disabled:opacity-50"
                   style={{
                     backgroundColor: "var(--color-bg)",
                     borderColor: "var(--color-muted)",
                   }}
-                />
+                >
+                  <option value="">Sélectionner une forêt</option>
+                  {forets.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Parcelle</label>
+                <select
+                  name="parcelle"
+                  required
+                  disabled={!selectedForet}
+                  className="w-full px-3 py-2 rounded-lg border disabled:opacity-50"
+                  style={{
+                    backgroundColor: "var(--color-bg)",
+                    borderColor: "var(--color-muted)",
+                  }}
+                >
+                  <option value="">Sélectionner une parcelle</option>
+                  {parcelles.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

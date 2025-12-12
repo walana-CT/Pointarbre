@@ -46,18 +46,23 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { date_debut, date_fin, date_cloture, foret, triage, parcelle } = body;
+    const { date_debut, foret, triage, parcelle } = body;
 
     // Validation basique
-    if (!date_debut || !date_fin || !foret || !triage || !parcelle) {
+    if (!date_debut || !foret || !triage || !parcelle) {
       return NextResponse.json({ error: "Champs requis manquants" }, { status: 400 });
     }
 
+    const dateDebut = new Date(date_debut);
+    // Date de fin par défaut : 1 mois après le début
+    const dateFin = new Date(dateDebut);
+    dateFin.setMonth(dateFin.getMonth() + 1);
+
     const chantier = await prisma.chantier.create({
       data: {
-        date_debut: new Date(date_debut),
-        date_fin: new Date(date_fin),
-        date_cloture: date_cloture ? new Date(date_cloture) : new Date(date_fin),
+        date_debut: dateDebut,
+        date_fin: dateFin,
+        date_cloture: dateFin,
         foret,
         triage,
         parcelle,
