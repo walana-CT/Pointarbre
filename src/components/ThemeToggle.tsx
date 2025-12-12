@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-const THEMES = ["light", "dark", "accessible"] as const;
+import { Sun, Moon } from "lucide-react";
 
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<string>("light");
@@ -14,43 +13,31 @@ export default function ThemeToggle() {
     applyTheme(initial);
   }, []);
 
-  useEffect(() => {
-    applyTheme(theme);
-    // persist
-    try {
-      document.cookie = `theme=${encodeURIComponent(theme)}; path=/; max-age=${60 * 60 * 24 * 365}`;
-    } catch (e) {
-      // ignore
-    }
-  }, [theme]);
-
   function applyTheme(t: string) {
     const html = document.documentElement;
-    // remove existing theme- classes
     Array.from(html.classList)
       .filter((c) => c.startsWith("theme-"))
       .forEach((c) => html.classList.remove(c));
     html.classList.add(`theme-${t}`);
   }
 
+  function toggleTheme() {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    applyTheme(newTheme);
+    document.cookie = `theme=${encodeURIComponent(newTheme)}; path=/; max-age=${
+      60 * 60 * 24 * 365
+    }`;
+  }
+
   return (
-    <div className="flex items-center gap-2">
-      <label htmlFor="theme-select" className="sr-only">
-        Thème
-      </label>
-      <select
-        id="theme-select"
-        value={theme}
-        onChange={(e) => setTheme(e.target.value)}
-        className="rounded-md border border-gray-300 px-2 py-1 text-sm"
-        aria-label="Choisir le thème"
-      >
-        {THEMES.map((t) => (
-          <option key={t} value={t}>
-            {t[0].toUpperCase() + t.slice(1)}
-          </option>
-        ))}
-      </select>
-    </div>
+    <button
+      onClick={toggleTheme}
+      className="p-2 rounded-lg transition-colors hover:bg-[var(--color-surface)]"
+      aria-label={`Passer au thème ${theme === "light" ? "sombre" : "clair"}`}
+      title={`Thème ${theme === "light" ? "sombre" : "clair"}`}
+    >
+      {theme === "light" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+    </button>
   );
 }

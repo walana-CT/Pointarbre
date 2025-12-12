@@ -42,7 +42,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen flex items-center justify-center py-6 sm:py-12 px-4">
       <div className="w-full max-w-4xl rounded-lg shadow-lg overflow-hidden grid grid-cols-1 md:grid-cols-2">
         {/* Left panel */}
         <div className="hidden md:flex flex-col items-center justify-center gap-6 p-10 bg-[var(--color-secondary)]">
@@ -66,7 +66,6 @@ export default function LoginPage() {
                 Entrez vos identifiants pour continuer
               </p>
             </div>
-        
           </div>
 
           {error && (

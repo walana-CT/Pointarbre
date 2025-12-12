@@ -14,7 +14,7 @@ export default function LogoutButton() {
   };
 
   return (
-    <button type="button" className="btn-secondary" onClick={handleLogout}>
+    <button type="button" className="btn-danger" onClick={handleLogout}>
       Déconnexion
     </button>
   );

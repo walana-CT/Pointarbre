@@ -24,25 +24,25 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           className="w-full bg-[var(--color-surface)] border-b"
           style={{ borderColor: "rgba(0,0,0,0.06)" }}
         >
-          <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between gap-2">
             <div className="flex items-center gap-3">
-              <Link href="/" className="text-lg font-semibold">
+              <Link href="/" className="text-base sm:text-lg font-semibold">
                 POINTARBRE
               </Link>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <ThemeToggle />
               {user ? (
-                <div className="flex items-center gap-3">
-                  <div className="text-sm">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="text-xs sm:text-sm hidden sm:block">
                     <div className="font-medium">{user.name ?? user.email}</div>
                     <div className="text-xs text-[var(--color-muted)]">{user.email}</div>
                   </div>
                   <LogoutButton />
                 </div>
               ) : (
-                <Link href="/login" className="btn-secondary">
-                  Se connecter
+                <Link href="/login" className="btn-secondary text-sm px-3 py-1.5 sm:px-4 sm:py-2">
+                  Connexion
                 </Link>
               )}
             </div>

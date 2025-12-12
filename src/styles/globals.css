@@ -15,14 +15,30 @@
   }
 
   .btn-secondary {
-    @apply px-4 py-2 rounded-lg transition-colors;
-    background-color: var(--color-surface);
+    @apply px-4 py-2 rounded-lg transition-colors border;
+    background-color: var(--color-bg);
     color: var(--color-text);
+    border-color: var(--color-muted);
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--color-surface);
+    border-color: var(--color-text);
+  }
+
+  .btn-danger {
+    @apply px-4 py-2 rounded-lg transition-colors;
+    background-color: var(--color-danger);
+    color: white;
+  }
+
+  .btn-danger:hover {
+    opacity: 0.9;
   }
 }
 
-/* Theme variables for light / dark / accessible themes
-   Use classes on <html> like `theme-light`, `theme-dark`, `theme-accessible`.
+/* Theme variables for light / dark themes
+   Use classes on <html> like `theme-light`, `theme-dark`.
    Components should use the CSS variables, e.g. `bg-[var(--color-primary)]`.
 */
 
@@ -61,18 +77,6 @@
   --color-accent: #6fa38f;
   --color-success: #2ea44f;
   --color-danger: #ff6b6b;
-}
-
-.theme-accessible {
-  --color-primary: #006400;
-  --color-secondary: #004d00;
-  --color-bg: #ffffff;
-  --color-surface: #ffffff;
-  --color-text: #000000;
-  --color-muted: #666666;
-  --color-accent: #ffb703;
-  --color-success: #007a3d;
-  --color-danger: #b00020;
 }
 
 /* Utilities fallback for inputs/buttons to ensure focus rings are visible */
