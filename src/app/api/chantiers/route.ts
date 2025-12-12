@@ -54,15 +54,12 @@ export async function POST(req: NextRequest) {
     }
 
     const dateDebut = new Date(date_debut);
-    // Date de fin par défaut : 1 mois après le début
-    const dateFin = new Date(dateDebut);
-    dateFin.setMonth(dateFin.getMonth() + 1);
 
     const chantier = await prisma.chantier.create({
       data: {
         date_debut: dateDebut,
-        date_fin: dateFin,
-        date_cloture: dateFin,
+        date_fin: null,
+        date_cloture: null,
         foret,
         triage,
         parcelle,

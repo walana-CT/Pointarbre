@@ -6,86 +6,106 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Démarrage du seed de la base de données...");
 
- //seeding de triages
+  //seeding de triages
   const triage1 = await prisma.triage.upsert({
-    where: { name: 'Triage1' },
+    where: { name: "Triage1" },
     update: {},
     create: {
-      name: 'Triage1',
+      name: "Triage1",
     },
-  })
+  });
 
   const foret_bilsteinstal = await prisma.foret.upsert({
-    where: { name: 'foret_bilsteinstal' },
+    where: { name: "foret_bilsteinstal" },
     update: {},
     create: {
-      name: 'foret_bilsteinstal',
+      name: "foret_bilsteinstal",
       triage: {
-        connect: { id: triage1.id } // <- ici on référence le triage existant
-      }
+        connect: { id: triage1.id }, // <- ici on référence le triage existant
+      },
     },
-  })
+  });
 
-   const foret_ursprung = await prisma.foret.upsert({
-    where: { name: 'foret_ursprung' },
+  const foret_ursprung = await prisma.foret.upsert({
+    where: { name: "foret_ursprung" },
     update: {},
     create: {
-      name: 'foret_ursprung',
+      name: "foret_ursprung",
       triage: {
-        connect: { id: triage1.id } // <- ici on référence le triage existant
-      }
+        connect: { id: triage1.id }, // <- ici on référence le triage existant
+      },
     },
-  }) 
+  });
 
   const parcelle1 = await prisma.parcelle.upsert({
-    where: { id: 'some-id' },
+    where: { id: "some-id" },
     update: {},
     create: {
-      name: 'parcelle1',
+      name: "parcelle1",
       foret: {
-        connect: { id: foret_bilsteinstal.id }
-      }
+        connect: { id: foret_bilsteinstal.id },
+      },
     },
-  })
-
+  });
 
   const parcelle2 = await prisma.parcelle.upsert({
-    where: { id: 'some-id' },
+    where: { id: "some-id" },
     update: {},
     create: {
-      name: 'parcelle2',
+      name: "parcelle2",
       foret: {
-        connect: { id: foret_bilsteinstal.id }
-      }
+        connect: { id: foret_bilsteinstal.id },
+      },
     },
-  })
+  });
 
   const parcelle3 = await prisma.parcelle.upsert({
-    where: { id: 'some-id' },
+    where: { id: "some-id" },
     update: {},
     create: {
-      name: 'parcelle3',
+      name: "parcelle3",
       foret: {
-        connect: { id: foret_ursprung.id }
-      }
+        connect: { id: foret_ursprung.id },
+      },
     },
-  })
+  });
 
   const parcelle4 = await prisma.parcelle.upsert({
-    where: { id: 'some-id' },
+    where: { id: "some-id" },
     update: {},
     create: {
-      name: 'parcelle3',
+      name: "parcelle3",
       foret: {
-        connect: { id: foret_ursprung.id }
-      }
+        connect: { id: foret_ursprung.id },
+      },
     },
-  })
+  });
 
+  console.log({ triage1, foret_ursprung, foret_bilsteinstal });
+  console.log({ parcelle1, parcelle2, parcelle3, parcelle4 });
 
-  console.log({ triage1, foret_ursprung, foret_bilsteinstal})
-  console.log({ parcelle1, parcelle2, parcelle3, parcelle4})
+  // Seeding des types de phases
+  const typePhases = [
+    { name: "Abattage", description: "Coupe et abattage des arbres" },
+    { name: "Ébranchage", description: "Suppression des branches" },
+    { name: "Tronçonnage", description: "Découpe du tronc en billons" },
+    { name: "Débardage", description: "Transport des bois jusqu'à la route" },
+    { name: "Façonnage", description: "Préparation et tri des bois" },
+    { name: "Empilage", description: "Mise en tas des grumes" },
+    { name: "Déplacement", description: "Déplacement entre parcelles ou zones" },
+    { name: "Entretien matériel", description: "Maintenance des outils et machines" },
+    { name: "Pause", description: "Pause repas ou repos" },
+  ];
 
+  for (const typePhase of typePhases) {
+    await prisma.typePhase.upsert({
+      where: { name: typePhase.name },
+      update: {},
+      create: typePhase,
+    });
+  }
+
+  console.log("✅ Types de phases créés:", typePhases.length);
 
   // Hash du mot de passe "admin" pour l'utilisateur administrateur
   const adminPasswordHash = await argon2.hash("rob");

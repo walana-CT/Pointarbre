@@ -7,8 +7,8 @@ import { Plus } from "lucide-react";
 type Chantier = {
   id: string;
   date_debut: string;
-  date_fin: string;
-  date_cloture: string;
+  date_fin: string | null;
+  date_cloture: string | null;
   foret: string;
   triage: string;
   parcelle: string;
@@ -139,6 +139,28 @@ export default function ChantiersPage() {
       }
     } catch (error) {
       console.error("Erreur création chantier:", error);
+      alert("Erreur serveur");
+    }
+  }
+
+  async function handleDeleteChantier(chantierId: string) {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer ce chantier ?")) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/chantiers/${chantierId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        fetchChantiers();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Erreur lors de la suppression");
+      }
+    } catch (error) {
+      console.error("Erreur suppression chantier:", error);
       alert("Erreur serveur");
     }
   }
@@ -318,7 +340,11 @@ export default function ChantiersPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[var(--color-muted)]">Fin:</span>
-                  <span>{new Date(chantier.date_fin).toLocaleDateString()}</span>
+                  <span>
+                    {chantier.date_fin
+                      ? new Date(chantier.date_fin).toLocaleDateString()
+                      : "En cours"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[var(--color-muted)]">Jours:</span>
@@ -326,12 +352,21 @@ export default function ChantiersPage() {
                 </div>
               </div>
 
-              <Link
-                href={`/chantiers/${chantier.id}`}
-                className="block text-center btn-secondary w-full"
-              >
-                Voir détails
-              </Link>
+              <div className="flex gap-2">
+                <Link
+                  href={`/chantiers/${chantier.id}`}
+                  className="block text-center btn-secondary flex-1"
+                >
+                  Voir détails
+                </Link>
+                <button
+                  onClick={() => handleDeleteChantier(chantier.id)}
+                  className="btn-danger px-3"
+                  title="Supprimer"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
           ))}
         </div>

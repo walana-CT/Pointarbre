@@ -11,20 +11,20 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
   name         String?
   passwordHash String
-  role         Role     @default(OUVRIER)
-  isDisabled   Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  role         Role      @default(OUVRIER)
+  isDisabled   Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
   sessions     Session[]
 
-  ut            UT[]       @relation("UserUTs")
-  agenceId      String?
-  agence        Agence?    @relation(fields: [agenceId], references: [id])
-  chantiers     Chantier[]
+  ut        UT[]       @relation("UserUTs")
+  agenceId  String?
+  agence    Agence?    @relation(fields: [agenceId], references: [id])
+  chantiers Chantier[]
 
   @@map("user")
 }
@@ -47,37 +47,37 @@ enum Role {
 }
 
 model Agence {
-  id    String   @id @default(cuid())
+  id    String @id @default(cuid())
   name  String
-  uts   UT[]     @relation("AgenceUTs")
+  uts   UT[]   @relation("AgenceUTs")
   users User[]
 
   @@map("agence")
 }
 
 model UT {
-  id       String    @id @default(cuid())
-  number   String
-  agences  Agence[]  @relation("AgenceUTs")
-  users  User[] @relation("UserUTs")
+  id      String   @id @default(cuid())
+  number  String
+  agences Agence[] @relation("AgenceUTs")
+  users   User[]   @relation("UserUTs")
 
   @@map("ut")
 }
 
 model Triage {
-  id      String   @id @default(cuid())
-  name    String   @unique 
-  forets  Foret[]
+  id     String  @id @default(cuid())
+  name   String  @unique
+  forets Foret[]
 
   @@map("triage")
 }
 
 model Foret {
-  id       String   @id @default(cuid())
-  name     String   @unique
+  id   String @id @default(cuid())
+  name String @unique
 
   triageId String
-  triage   Triage   @relation(fields: [triageId], references: [id])
+  triage   Triage @relation(fields: [triageId], references: [id])
 
   parcelles Parcelle[]
 
@@ -93,30 +93,29 @@ model Parcelle {
   @@map("parcelle")
 }
 
-
 model Chantier {
-  id            String   @id @default(cuid())
-  date_debut    DateTime
-  date_fin      DateTime?
-  date_cloture  DateTime?
-  foret         String
-  triage        String
-  parcelle      String
+  id           String    @id @default(cuid())
+  date_debut   DateTime
+  date_fin     DateTime?
+  date_cloture DateTime?
+  foret        String
+  triage       String
+  parcelle     String
 
-  userId        Int
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  jours         Jour[]
+  jours Jour[]
 
   @@map("chantier")
 }
 
 model Jour {
-  id                 String   @id @default(cuid())
-  
-  chantierId         String
-  chantier           Chantier @relation(fields: [chantierId], references: [id])
-  
+  id String @id @default(cuid())
+
+  chantierId String
+  chantier   Chantier @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+
   phases             Phase[]
   date               DateTime
   h_rendement        Int?
@@ -128,14 +127,22 @@ model Jour {
   @@map("jour")
 }
 
+model TypePhase {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+
+  @@map("type_phase")
+}
+
 model Phase {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  jourId    String
-  jour      Jour @relation(fields: [jourId], references: [id])
+  jourId String
+  jour   Jour   @relation(fields: [jourId], references: [id], onDelete: Cascade)
 
-  type      String
-  duree     DateTime
+  type  String
+  duree DateTime
 
   @@map("phase")
 }
