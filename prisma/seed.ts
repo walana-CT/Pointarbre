@@ -74,7 +74,7 @@ async function main() {
     where: { id: "some-id" },
     update: {},
     create: {
-      name: "parcelle3",
+      name: "parcelle4",
       foret: {
         connect: { id: foret_ursprung.id },
       },

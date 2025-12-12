@@ -86,6 +86,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: "Date requise" }, { status: 400 });
     }
 
+    // Vérifier qu'aucun jour n'existe déjà à cette date pour ce chantier
+    const existingJour = await prisma.jour.findFirst({
+      where: {
+        chantierId: id,
+        date: new Date(date),
+      },
+    });
+
+    if (existingJour) {
+      return NextResponse.json({ error: "Un jour existe déjà à cette date" }, { status: 400 });
+    }
+
     const jour = await prisma.jour.create({
       data: {
         chantierId: id,

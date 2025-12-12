@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getUserFromToken } from "@/lib/auth";
-import Link from "next/link";
+import AdminClient from "./AdminClient";
 
 export default async function AdminPage() {
   const cookieStore = await cookies();
@@ -17,26 +17,5 @@ export default async function AdminPage() {
     return redirect("/");
   }
 
-  return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
-      <div className="mb-6">
-        <Link href="/" className="text-[var(--color-primary)] hover:underline">
-          ← Retour à l'accueil
-        </Link>
-      </div>
-
-      <h1 className="text-4xl font-bold mb-4">Administration</h1>
-      <p className="text-[var(--color-muted)] mb-8">Paramètres et configuration du système.</p>
-
-      <div
-        className="p-8 rounded-lg border"
-        style={{
-          backgroundColor: "var(--color-surface)",
-          borderColor: "var(--color-muted)",
-        }}
-      >
-        <p className="text-center text-[var(--color-muted)]">Page en construction... 🚧</p>
-      </div>
-    </div>
-  );
+  return <AdminClient />;
 }

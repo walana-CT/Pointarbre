@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { Plus, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, ChevronRight, ChevronDown } from "lucide-react";
 
 type Phase = {
   id: string;
@@ -50,6 +50,7 @@ export default function ChantierDetailPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showPhaseForm, setShowPhaseForm] = useState<string | null>(null);
   const [typesPhases, setTypesPhases] = useState<TypePhase[]>([]);
+  const [copiedJourData, setCopiedJourData] = useState<Partial<Jour> | null>(null);
 
   useEffect(() => {
     fetchChantier();
@@ -129,6 +130,24 @@ export default function ChantierDetailPage() {
     return nextDate.toISOString().split("T")[0];
   }
 
+  function handleCopyLastJour() {
+    if (jours.length === 0) return;
+
+    const lastJour = jours.reduce((latest, jour) => {
+      const jourDate = new Date(jour.date);
+      const latestDate = new Date(latest.date);
+      return jourDate > latestDate ? jour : latest;
+    }, jours[0]);
+
+    setCopiedJourData({
+      h_rendement: lastJour.h_rendement,
+      location_materiel: lastJour.location_materiel,
+      ind_kilometrique: lastJour.ind_kilometrique,
+      transport_materiel: lastJour.transport_materiel,
+      panier: lastJour.panier,
+    });
+  }
+
   async function handleCreateJour(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -150,6 +169,7 @@ export default function ChantierDetailPage() {
       if (res.ok) {
         const newJour = await res.json();
         setShowCreateForm(false);
+        setCopiedJourData(null);
         fetchJours();
         setExpandedJourId(newJour.id);
       } else {
@@ -178,6 +198,7 @@ export default function ChantierDetailPage() {
 
       if (res.ok) {
         fetchJours();
+        setExpandedJourId(null);
       } else {
         const data = await res.json();
         alert(data.error || "Erreur lors de la mise à jour");
@@ -435,7 +456,14 @@ export default function ChantierDetailPage() {
             borderColor: "var(--color-muted)",
           }}
         >
-          <h3 className="text-xl font-semibold mb-4">Créer un nouveau jour</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-semibold">Créer un nouveau jour</h3>
+            {jours.length > 0 && (
+              <button type="button" onClick={handleCopyLastJour} className="btn-secondary text-sm">
+                Copier jour précédent
+              </button>
+            )}
+          </div>
           <form onSubmit={handleCreateJour} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
@@ -444,6 +472,7 @@ export default function ChantierDetailPage() {
                   type="date"
                   name="date"
                   required
+                  key={copiedJourData ? "copied" : "default"}
                   defaultValue={getDefaultDate()}
                   className="w-full px-3 py-2 rounded-lg border"
                   style={{
@@ -460,6 +489,8 @@ export default function ChantierDetailPage() {
                   name="h_rendement"
                   min="0"
                   placeholder="0"
+                  key={copiedJourData ? "copied-h" : "default-h"}
+                  defaultValue={copiedJourData?.h_rendement ?? ""}
                   className="w-full px-3 py-2 rounded-lg border"
                   style={{
                     backgroundColor: "var(--color-bg)",
@@ -475,6 +506,8 @@ export default function ChantierDetailPage() {
                   name="location_materiel"
                   min="0"
                   placeholder="0"
+                  key={copiedJourData ? "copied-loc" : "default-loc"}
+                  defaultValue={copiedJourData?.location_materiel ?? ""}
                   className="w-full px-3 py-2 rounded-lg border"
                   style={{
                     backgroundColor: "var(--color-bg)",
@@ -490,6 +523,8 @@ export default function ChantierDetailPage() {
                   name="ind_kilometrique"
                   min="0"
                   placeholder="0"
+                  key={copiedJourData ? "copied-km" : "default-km"}
+                  defaultValue={copiedJourData?.ind_kilometrique ?? ""}
                   className="w-full px-3 py-2 rounded-lg border"
                   style={{
                     backgroundColor: "var(--color-bg)",
@@ -500,14 +535,26 @@ export default function ChantierDetailPage() {
 
               <div className="flex items-center gap-4 pt-6">
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" name="transport_materiel" className="w-4 h-4" />
+                  <input
+                    type="checkbox"
+                    name="transport_materiel"
+                    key={copiedJourData ? "copied-trans" : "default-trans"}
+                    defaultChecked={copiedJourData?.transport_materiel ?? false}
+                    className="w-4 h-4"
+                  />
                   <span className="text-sm">Transport matériel</span>
                 </label>
               </div>
 
               <div className="flex items-center gap-4 pt-6">
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" name="panier" className="w-4 h-4" />
+                  <input
+                    type="checkbox"
+                    name="panier"
+                    key={copiedJourData ? "copied-panier" : "default-panier"}
+                    defaultChecked={copiedJourData?.panier ?? false}
+                    className="w-4 h-4"
+                  />
                   <span className="text-sm">Panier</span>
                 </label>
               </div>
@@ -516,7 +563,10 @@ export default function ChantierDetailPage() {
             <div className="flex gap-3 justify-end">
               <button
                 type="button"
-                onClick={() => setShowCreateForm(false)}
+                onClick={() => {
+                  setShowCreateForm(false);
+                  setCopiedJourData(null);
+                }}
                 className="btn-secondary"
               >
                 Annuler
@@ -564,7 +614,7 @@ export default function ChantierDetailPage() {
               >
                 {/* En-tête de la ligne - toujours visible */}
                 <div
-                  className="p-4 cursor-pointer hover:bg-[var(--color-bg)] transition-colors"
+                  className="p-4 cursor-pointer hover:bg-[var(--color-bg)] transition-colors outline-none focus:outline-none"
                   onClick={() => setExpandedJourId(isExpanded ? null : jour.id)}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -604,9 +654,11 @@ export default function ChantierDetailPage() {
                           ✕
                         </button>
                       )}
-                      <span className="text-sm text-[var(--color-muted)]">
-                        {isExpanded ? "▼" : "▶"}
-                      </span>
+                      {isExpanded ? (
+                        <ChevronDown className="w-5 h-5 text-[var(--color-muted)]" />
+                      ) : (
+                        <ChevronRight className="w-5 h-5 text-[var(--color-muted)]" />
+                      )}
                     </div>
                   </div>
                 </div>
