@@ -93,6 +93,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json(updatedChantier);
     }
 
+    // Si action=reopen, remettre date_fin et date_cloture à null
+    if (body.action === "reopen") {
+      const updatedChantier = await prisma.chantier.update({
+        where: { id },
+        data: {
+          date_fin: null,
+          date_cloture: null,
+        },
+      });
+
+      return NextResponse.json(updatedChantier);
+    }
+
     return NextResponse.json({ error: "Action non reconnue" }, { status: 400 });
   } catch (error) {
     console.error("Erreur PATCH /api/chantiers/[id]:", error);

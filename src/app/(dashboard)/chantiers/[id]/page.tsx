@@ -238,6 +238,34 @@ export default function ChantierDetailPage() {
     }
   }
 
+  async function handleReopenChantier() {
+    if (
+      !confirm(
+        "Êtes-vous sûr de vouloir rouvrir ce chantier ? Les dates de fin et de clôture seront supprimées."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/chantiers/${chantierId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reopen" }),
+      });
+
+      if (res.ok) {
+        fetchChantier();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Erreur lors de la réouverture");
+      }
+    } catch (error) {
+      console.error("Erreur réouverture chantier:", error);
+      alert("Erreur serveur");
+    }
+  }
+
   async function handleCreatePhase(jourId: string, e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -370,17 +398,27 @@ export default function ChantierDetailPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          {!chantier.date_fin && jours.length > 0 && (
+          {chantier.date_fin ? (
             <button
-              onClick={handleFinalizeChantier}
+              onClick={handleReopenChantier}
               className="btn-secondary flex items-center gap-2 justify-center"
             >
-              Finir chantier
+              Rouvrir chantier
             </button>
+          ) : (
+            jours.length > 0 && (
+              <button
+                onClick={handleFinalizeChantier}
+                className="btn-secondary flex items-center gap-2 justify-center"
+              >
+                Finir chantier
+              </button>
+            )
           )}
           <button
             onClick={() => setShowCreateForm(true)}
-            className="btn-primary flex items-center gap-2 justify-center"
+            disabled={!!chantier.date_fin}
+            className="btn-primary flex items-center gap-2 justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Plus className="w-5 h-5" />
             Nouveau jour
@@ -554,16 +592,18 @@ export default function ChantierDetailPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteJour(jour.id);
-                        }}
-                        className="btn-danger px-3 py-1 text-sm"
-                        title="Supprimer"
-                      >
-                        ✕
-                      </button>
+                      {!chantier.date_fin && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteJour(jour.id);
+                          }}
+                          className="btn-danger px-3 py-1 text-sm"
+                          title="Supprimer"
+                        >
+                          ✕
+                        </button>
+                      )}
                       <span className="text-sm text-[var(--color-muted)]">
                         {isExpanded ? "▼" : "▶"}
                       </span>
@@ -605,7 +645,8 @@ export default function ChantierDetailPage() {
                             min="0"
                             defaultValue={jour.h_rendement || ""}
                             placeholder="0"
-                            className="w-full px-3 py-2 rounded-lg border"
+                            disabled={!!chantier.date_fin}
+                            className="w-full px-3 py-2 rounded-lg border disabled:opacity-60 disabled:cursor-not-allowed"
                             style={{
                               backgroundColor: "var(--color-bg)",
                               borderColor: "var(--color-muted)",
@@ -623,7 +664,8 @@ export default function ChantierDetailPage() {
                             min="0"
                             defaultValue={jour.location_materiel || ""}
                             placeholder="0"
-                            className="w-full px-3 py-2 rounded-lg border"
+                            disabled={!!chantier.date_fin}
+                            className="w-full px-3 py-2 rounded-lg border disabled:opacity-60 disabled:cursor-not-allowed"
                             style={{
                               backgroundColor: "var(--color-bg)",
                               borderColor: "var(--color-muted)",
@@ -641,7 +683,8 @@ export default function ChantierDetailPage() {
                             min="0"
                             defaultValue={jour.ind_kilometrique || ""}
                             placeholder="0"
-                            className="w-full px-3 py-2 rounded-lg border"
+                            disabled={!!chantier.date_fin}
+                            className="w-full px-3 py-2 rounded-lg border disabled:opacity-60 disabled:cursor-not-allowed"
                             style={{
                               backgroundColor: "var(--color-bg)",
                               borderColor: "var(--color-muted)",
@@ -655,7 +698,8 @@ export default function ChantierDetailPage() {
                               type="checkbox"
                               name="transport_materiel"
                               defaultChecked={jour.transport_materiel}
-                              className="w-4 h-4"
+                              disabled={!!chantier.date_fin}
+                              className="w-4 h-4 disabled:opacity-60 disabled:cursor-not-allowed"
                             />
                             <span className="text-sm">Transport matériel</span>
                           </label>
@@ -667,18 +711,21 @@ export default function ChantierDetailPage() {
                               type="checkbox"
                               name="panier"
                               defaultChecked={jour.panier}
-                              className="w-4 h-4"
+                              disabled={!!chantier.date_fin}
+                              className="w-4 h-4 disabled:opacity-60 disabled:cursor-not-allowed"
                             />
                             <span className="text-sm">Panier</span>
                           </label>
                         </div>
                       </div>
 
-                      <div className="flex gap-3 justify-end">
-                        <button type="submit" className="btn-primary">
-                          Enregistrer
-                        </button>
-                      </div>
+                      {!chantier.date_fin && (
+                        <div className="flex gap-3 justify-end">
+                          <button type="submit" className="btn-primary">
+                            Enregistrer
+                          </button>
+                        </div>
+                      )}
                     </form>
 
                     {/* Section phases */}
@@ -691,15 +738,17 @@ export default function ChantierDetailPage() {
                           Phases ({jour.phases.length}) - Durée totale:{" "}
                           {calculateTotalDuration(jour.phases)}
                         </h4>
-                        <button
-                          onClick={() =>
-                            setShowPhaseForm(showPhaseForm === jour.id ? null : jour.id)
-                          }
-                          className="btn-primary text-sm flex items-center gap-1"
-                        >
-                          <Plus className="w-4 h-4" />
-                          Ajouter phase
-                        </button>
+                        {!chantier.date_fin && (
+                          <button
+                            onClick={() =>
+                              setShowPhaseForm(showPhaseForm === jour.id ? null : jour.id)
+                            }
+                            className="btn-primary text-sm flex items-center gap-1"
+                          >
+                            <Plus className="w-4 h-4" />
+                            Ajouter phase
+                          </button>
+                        )}
                       </div>
 
                       {/* Formulaire d'ajout de phase */}
@@ -805,13 +854,15 @@ export default function ChantierDetailPage() {
                                   <span className="font-medium">
                                     {hours}h{minutes.toString().padStart(2, "0")}
                                   </span>
-                                  <button
-                                    onClick={() => handleDeletePhase(phase.id)}
-                                    className="opacity-0 group-hover:opacity-100 text-[var(--color-danger)] hover:text-red-700 transition-opacity"
-                                    title="Supprimer"
-                                  >
-                                    ✕
-                                  </button>
+                                  {!chantier.date_fin && (
+                                    <button
+                                      onClick={() => handleDeletePhase(phase.id)}
+                                      className="opacity-0 group-hover:opacity-100 text-[var(--color-danger)] hover:text-red-700 transition-opacity"
+                                      title="Supprimer"
+                                    >
+                                      ✕
+                                    </button>
+                                  )}
                                 </div>
                               </div>
                             );
