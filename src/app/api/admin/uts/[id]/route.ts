@@ -17,15 +17,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const { id } = await params;
     const body = await req.json();
-    const { number } = body;
+    const { number, name } = body;
 
     if (!number || !number.trim()) {
       return NextResponse.json({ error: "Numéro requis" }, { status: 400 });
     }
 
-    const ut = await prisma.uT.update({
+    if (!name || !name.trim()) {
+      return NextResponse.json({ error: "Nom requis" }, { status: 400 });
+    }
+
+    const ut = await prisma.ut.update({
       where: { id },
-      data: { number: number.trim() },
+      data: {
+        number: number.trim(),
+        name: name.trim(),
+      },
     });
 
     return NextResponse.json(ut);
@@ -51,7 +58,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const { id } = await params;
 
     // Vérifier les dépendances
-    const ut = await prisma.uT.findUnique({
+    const ut = await prisma.ut.findUnique({
       where: { id },
       include: {
         _count: {
@@ -74,7 +81,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       );
     }
 
-    await prisma.uT.delete({
+    await prisma.ut.delete({
       where: { id },
     });
 

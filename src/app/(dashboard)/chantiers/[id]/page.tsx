@@ -38,6 +38,396 @@ type TypePhase = {
   description: string | null;
 };
 
+// Utilitaire pour trouver le dernier jour
+function getLatestJour(jours: Jour[]): Jour | null {
+  if (jours.length === 0) return null;
+  return jours.reduce((latest, jour) => {
+    const jourDate = new Date(jour.date);
+    const latestDate = new Date(latest.date);
+    return jourDate > latestDate ? jour : latest;
+  }, jours[0]);
+}
+
+// Utilitaire pour parser la durée HH:MM
+function parseDuration(duree: string): [string, string] {
+  if (!duree) return ["0", "0"];
+  const parts = duree.split(":");
+  return [parts[0] || "0", parts[1] || "0"];
+}
+
+// Utilitaire pour formater la durée
+function formatDuration(hours: string, minutes: string): string {
+  return `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}`;
+}
+
+// Utilitaire pour calculer la durée totale des phases
+function calculateTotalDuration(phases: Phase[]): string {
+  if (phases.length === 0) return "0h00";
+
+  let totalMinutes = 0;
+  phases.forEach((phase) => {
+    const dureeDate = new Date(phase.duree);
+    totalMinutes += dureeDate.getHours() * 60 + dureeDate.getMinutes();
+  });
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours}h${minutes.toString().padStart(2, "0")}`;
+}
+
+// Utilitaire pour convertir une durée (date/string) en format HH:MM
+function convertDureeToHHMM(duree: string): string {
+  const dureeDate = new Date(duree);
+  const hours = dureeDate.getHours();
+  const minutes = dureeDate.getMinutes();
+  return formatDuration(hours.toString(), minutes.toString());
+}
+
+// Composant pour le formulaire d'ajout de phase (jours existants)
+function PhaseAddForm({
+  typesPhases,
+  onSubmit,
+  onCancel,
+}: {
+  typesPhases: TypePhase[];
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div
+      className="mb-4 p-4 rounded-lg border"
+      style={{
+        backgroundColor: "var(--color-bg)",
+        borderColor: "var(--color-muted)",
+      }}
+    >
+      <form onSubmit={onSubmit} className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label className="block text-sm font-medium mb-1">Type *</label>
+            <select
+              name="type"
+              required
+              className="w-full px-3 py-2 rounded-lg border"
+              style={{
+                backgroundColor: "var(--color-surface)",
+                borderColor: "var(--color-muted)",
+              }}
+            >
+              <option value="">Sélectionner un type</option>
+              {typesPhases.map((tp) => (
+                <option key={tp.id} value={tp.name}>
+                  {tp.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Heures *</label>
+            <input
+              type="number"
+              name="hours"
+              required
+              min="0"
+              max="23"
+              defaultValue="0"
+              className="w-full px-3 py-2 rounded-lg border"
+              style={{
+                backgroundColor: "var(--color-surface)",
+                borderColor: "var(--color-muted)",
+              }}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Minutes *</label>
+            <input
+              type="number"
+              name="minutes"
+              required
+              min="0"
+              max="59"
+              defaultValue="0"
+              className="w-full px-3 py-2 rounded-lg border"
+              style={{
+                backgroundColor: "var(--color-surface)",
+                borderColor: "var(--color-muted)",
+              }}
+            />
+          </div>
+        </div>
+        <div className="flex gap-2 justify-end">
+          <button type="button" onClick={onCancel} className="btn-secondary text-sm">
+            Annuler
+          </button>
+          <button type="submit" className="btn-primary text-sm">
+            Ajouter
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+// Composant pour les champs du formulaire jour
+function JourFormFields({
+  showDate = false,
+  defaultDate,
+  defaultValues,
+  disabled = false,
+}: {
+  showDate?: boolean;
+  defaultDate?: string;
+  defaultValues?: {
+    h_rendement?: number | null;
+    location_materiel?: number | null;
+    ind_kilometrique?: number | null;
+    transport_materiel?: boolean;
+    panier?: boolean;
+  };
+  disabled?: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {showDate && (
+        <div>
+          <label className="block text-sm font-medium mb-1">Date {!disabled && "*"}</label>
+          <input
+            type="date"
+            name="date"
+            required={!disabled}
+            disabled={disabled}
+            {...(disabled ? { value: defaultDate } : { defaultValue: defaultDate })}
+            className={`w-full px-3 py-2 rounded-lg border ${
+              disabled ? "opacity-60 cursor-not-allowed" : ""
+            }`}
+            style={{
+              backgroundColor: "var(--color-bg)",
+              borderColor: "var(--color-muted)",
+            }}
+          />
+        </div>
+      )}
+      <div>
+        <label className="block text-sm font-medium mb-1">H. rendement</label>
+        <input
+          type="number"
+          name="h_rendement"
+          min="0"
+          placeholder="0"
+          defaultValue={defaultValues?.h_rendement || ""}
+          disabled={disabled}
+          className={`w-full px-3 py-2 rounded-lg border ${
+            disabled ? "opacity-60 cursor-not-allowed" : ""
+          }`}
+          style={{
+            backgroundColor: "var(--color-bg)",
+            borderColor: "var(--color-muted)",
+          }}
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Location matériel</label>
+        <input
+          type="number"
+          name="location_materiel"
+          min="0"
+          placeholder="0"
+          defaultValue={defaultValues?.location_materiel || ""}
+          disabled={disabled}
+          className={`w-full px-3 py-2 rounded-lg border ${
+            disabled ? "opacity-60 cursor-not-allowed" : ""
+          }`}
+          style={{
+            backgroundColor: "var(--color-bg)",
+            borderColor: "var(--color-muted)",
+          }}
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Ind. kilométrique</label>
+        <input
+          type="number"
+          name="ind_kilometrique"
+          min="0"
+          placeholder="0"
+          defaultValue={defaultValues?.ind_kilometrique || ""}
+          disabled={disabled}
+          className={`w-full px-3 py-2 rounded-lg border ${
+            disabled ? "opacity-60 cursor-not-allowed" : ""
+          }`}
+          style={{
+            backgroundColor: "var(--color-bg)",
+            borderColor: "var(--color-muted)",
+          }}
+        />
+      </div>
+      <div className="flex items-center gap-4 pt-6">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            name="transport_materiel"
+            defaultChecked={defaultValues?.transport_materiel}
+            disabled={disabled}
+            className={`w-4 h-4 ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
+          />
+          <span className="text-sm">Transport matériel</span>
+        </label>
+      </div>
+      <div className="flex items-center gap-4 pt-6">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            name="panier"
+            defaultChecked={defaultValues?.panier}
+            disabled={disabled}
+            className={`w-4 h-4 ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
+          />
+          <span className="text-sm">Panier</span>
+        </label>
+      </div>
+    </div>
+  );
+}
+
+// Composant pour une phase individuelle en édition
+function PhaseEditor({
+  phase,
+  index,
+  typesPhases,
+  onUpdate,
+  onRemove,
+}: {
+  phase: { type: string; duree: string };
+  index: number;
+  typesPhases: TypePhase[];
+  onUpdate: (index: number, field: "type" | "duree", value: string) => void;
+  onRemove: (index: number) => void;
+}) {
+  const [hours, minutes] = parseDuration(phase.duree);
+
+  return (
+    <div
+      className="p-4 rounded-lg border"
+      style={{
+        backgroundColor: "var(--color-bg)",
+        borderColor: "var(--color-muted)",
+      }}
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+        <div>
+          <label className="block text-sm font-medium mb-1">Type *</label>
+          <select
+            value={phase.type}
+            onChange={(e) => onUpdate(index, "type", e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border"
+            style={{
+              backgroundColor: "var(--color-surface)",
+              borderColor: "var(--color-muted)",
+            }}
+            required
+          >
+            <option value="">Sélectionner un type</option>
+            {typesPhases.map((tp) => (
+              <option key={tp.id} value={tp.name}>
+                {tp.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Heures *</label>
+          <input
+            type="number"
+            value={hours}
+            onChange={(e) => onUpdate(index, "duree", formatDuration(e.target.value, minutes))}
+            min="0"
+            max="23"
+            className="w-full px-3 py-2 rounded-lg border"
+            style={{
+              backgroundColor: "var(--color-surface)",
+              borderColor: "var(--color-muted)",
+            }}
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Minutes *</label>
+          <input
+            type="number"
+            value={minutes}
+            onChange={(e) => onUpdate(index, "duree", formatDuration(hours, e.target.value))}
+            min="0"
+            max="59"
+            className="w-full px-3 py-2 rounded-lg border"
+            style={{
+              backgroundColor: "var(--color-surface)",
+              borderColor: "var(--color-muted)",
+            }}
+            required
+          />
+        </div>
+      </div>
+      <div className="flex justify-end">
+        <button type="button" onClick={() => onRemove(index)} className="btn-danger text-sm">
+          Supprimer
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Composant réutilisable pour la liste des phases en édition
+function PhasesList({
+  phases,
+  typesPhases,
+  onAdd,
+  onUpdate,
+  onRemove,
+  showAddButton = true,
+}: {
+  phases: Array<{ type: string; duree: string }>;
+  typesPhases: TypePhase[];
+  onAdd: () => void;
+  onUpdate: (index: number, field: "type" | "duree", value: string) => void;
+  onRemove: (index: number) => void;
+  showAddButton?: boolean;
+}) {
+  return (
+    <div className="border-t pt-4" style={{ borderColor: "var(--color-muted)" }}>
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="font-semibold">Phases</h4>
+        {showAddButton && (
+          <button
+            type="button"
+            onClick={onAdd}
+            className="btn-primary text-sm flex items-center gap-1"
+          >
+            <Plus className="w-4 h-4" />
+            Ajouter phase
+          </button>
+        )}
+      </div>
+
+      {phases.length === 0 ? (
+        <p className="text-sm text-[var(--color-muted)] italic">Aucune phase ajoutée</p>
+      ) : (
+        <div className="space-y-3">
+          {phases.map((phase, index) => (
+            <PhaseEditor
+              key={index}
+              phase={phase}
+              index={index}
+              typesPhases={typesPhases}
+              onUpdate={onUpdate}
+              onRemove={onRemove}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ChantierDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -50,7 +440,7 @@ export default function ChantierDetailPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showPhaseForm, setShowPhaseForm] = useState<string | null>(null);
   const [typesPhases, setTypesPhases] = useState<TypePhase[]>([]);
-  const [copiedJourData, setCopiedJourData] = useState<Partial<Jour> | null>(null);
+  const [newJourPhases, setNewJourPhases] = useState<Array<{ type: string; duree: string }>>([]);
 
   useEffect(() => {
     fetchChantier();
@@ -120,37 +510,63 @@ export default function ChantierDetailPage() {
     }
 
     // Sinon, utiliser le lendemain du dernier jour (en excluant les dimanches)
-    const lastJour = jours.reduce((latest, jour) => {
-      const jourDate = new Date(jour.date);
-      const latestDate = new Date(latest.date);
-      return jourDate > latestDate ? jour : latest;
-    }, jours[0]);
+    const lastJour = getLatestJour(jours);
+    if (!lastJour) return new Date().toISOString().split("T")[0];
 
     const nextDate = getNextWorkingDay(new Date(lastJour.date));
     return nextDate.toISOString().split("T")[0];
   }
 
   function handleCopyLastJour() {
-    if (jours.length === 0) return;
+    const lastJour = getLatestJour(jours);
+    if (!lastJour) return;
 
-    const lastJour = jours.reduce((latest, jour) => {
-      const jourDate = new Date(jour.date);
-      const latestDate = new Date(latest.date);
-      return jourDate > latestDate ? jour : latest;
-    }, jours[0]);
+    // Copier les phases du dernier jour (convertir la durée en format HH:MM)
+    setNewJourPhases(lastJour.phases.map((p) => ({ 
+      type: p.type, 
+      duree: convertDureeToHHMM(p.duree) 
+    })));
 
-    setCopiedJourData({
-      h_rendement: lastJour.h_rendement,
-      location_materiel: lastJour.location_materiel,
-      ind_kilometrique: lastJour.ind_kilometrique,
-      transport_materiel: lastJour.transport_materiel,
-      panier: lastJour.panier,
-    });
+    // Pré-remplir le formulaire (on va utiliser des refs ou états)
+    const form = document.querySelector("form[data-create-jour]") as HTMLFormElement;
+    if (form) {
+      const hRendementInput = form.elements.namedItem("h_rendement") as HTMLInputElement;
+      const locationInput = form.elements.namedItem("location_materiel") as HTMLInputElement;
+      const indKmInput = form.elements.namedItem("ind_kilometrique") as HTMLInputElement;
+      const transportInput = form.elements.namedItem("transport_materiel") as HTMLInputElement;
+      const panierInput = form.elements.namedItem("panier") as HTMLInputElement;
+
+      if (hRendementInput) hRendementInput.value = lastJour.h_rendement?.toString() || "";
+      if (locationInput) locationInput.value = lastJour.location_materiel?.toString() || "";
+      if (indKmInput) indKmInput.value = lastJour.ind_kilometrique?.toString() || "";
+      if (transportInput) transportInput.checked = lastJour.transport_materiel;
+      if (panierInput) panierInput.checked = lastJour.panier;
+    }
+  }
+
+  // Fonction utilitaire pour créer les phases d'un jour
+  async function createPhasesForJour(
+    jourId: string,
+    phases: Array<{ type: string; duree: string }>
+  ): Promise<void> {
+    for (const phase of phases) {
+      const [hours, minutes] = parseDuration(phase.duree);
+      await fetch(`/api/jours/${jourId}/phases`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: phase.type,
+          hours: hours,
+          minutes: minutes,
+        }),
+      });
+    }
   }
 
   async function handleCreateJour(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
 
     try {
       const res = await fetch(`/api/chantiers/${chantierId}/jours`, {
@@ -168,10 +584,16 @@ export default function ChantierDetailPage() {
 
       if (res.ok) {
         const newJour = await res.json();
+
+        // Créer les phases si il y en a
+        if (newJourPhases.length > 0) {
+          await createPhasesForJour(newJour.id, newJourPhases);
+        }
+
         setShowCreateForm(false);
-        setCopiedJourData(null);
+        setNewJourPhases([]);
+        form.reset();
         fetchJours();
-        setExpandedJourId(newJour.id);
       } else {
         const data = await res.json();
         alert(data.error || "Erreur lors de la création");
@@ -181,7 +603,6 @@ export default function ChantierDetailPage() {
       alert("Erreur serveur");
     }
   }
-
   async function handleUpdateJour(jourId: string, formData: FormData) {
     try {
       const res = await fetch(`/api/jours/${jourId}`, {
@@ -197,8 +618,8 @@ export default function ChantierDetailPage() {
       });
 
       if (res.ok) {
-        fetchJours();
         setExpandedJourId(null);
+        fetchJours();
       } else {
         const data = await res.json();
         alert(data.error || "Erreur lors de la mise à jour");
@@ -207,6 +628,20 @@ export default function ChantierDetailPage() {
       console.error("Erreur mise à jour jour:", error);
       alert("Erreur serveur");
     }
+  }
+
+  function handleAddPhaseToNewJour() {
+    setNewJourPhases([...newJourPhases, { type: "", duree: "" }]);
+  }
+
+  function handleRemovePhaseFromNewJour(index: number) {
+    setNewJourPhases(newJourPhases.filter((_, i) => i !== index));
+  }
+
+  function handleUpdateNewJourPhase(index: number, field: "type" | "duree", value: string) {
+    const updated = [...newJourPhases];
+    updated[index][field] = value;
+    setNewJourPhases(updated);
   }
 
   async function handleDeleteJour(jourId: string) {
@@ -338,20 +773,6 @@ export default function ChantierDetailPage() {
     }
   }
 
-  function calculateTotalDuration(phases: Phase[]): string {
-    if (phases.length === 0) return "0h00";
-
-    let totalMinutes = 0;
-    phases.forEach((phase) => {
-      const dureeDate = new Date(phase.duree);
-      totalMinutes += dureeDate.getHours() * 60 + dureeDate.getMinutes();
-    });
-
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    return `${hours}h${minutes.toString().padStart(2, "0")}`;
-  }
-
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-12">
@@ -464,108 +885,24 @@ export default function ChantierDetailPage() {
               </button>
             )}
           </div>
-          <form onSubmit={handleCreateJour} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Date *</label>
-                <input
-                  type="date"
-                  name="date"
-                  required
-                  key={copiedJourData ? "copied" : "default"}
-                  defaultValue={getDefaultDate()}
-                  className="w-full px-3 py-2 rounded-lg border"
-                  style={{
-                    backgroundColor: "var(--color-bg)",
-                    borderColor: "var(--color-muted)",
-                  }}
-                />
-              </div>
+          <form data-create-jour onSubmit={handleCreateJour} className="space-y-4">
+            <JourFormFields showDate defaultDate={getDefaultDate()} />
 
-              <div>
-                <label className="block text-sm font-medium mb-1">H. rendement</label>
-                <input
-                  type="number"
-                  name="h_rendement"
-                  min="0"
-                  placeholder="0"
-                  key={copiedJourData ? "copied-h" : "default-h"}
-                  defaultValue={copiedJourData?.h_rendement ?? ""}
-                  className="w-full px-3 py-2 rounded-lg border"
-                  style={{
-                    backgroundColor: "var(--color-bg)",
-                    borderColor: "var(--color-muted)",
-                  }}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Location matériel</label>
-                <input
-                  type="number"
-                  name="location_materiel"
-                  min="0"
-                  placeholder="0"
-                  key={copiedJourData ? "copied-loc" : "default-loc"}
-                  defaultValue={copiedJourData?.location_materiel ?? ""}
-                  className="w-full px-3 py-2 rounded-lg border"
-                  style={{
-                    backgroundColor: "var(--color-bg)",
-                    borderColor: "var(--color-muted)",
-                  }}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Ind. kilométrique</label>
-                <input
-                  type="number"
-                  name="ind_kilometrique"
-                  min="0"
-                  placeholder="0"
-                  key={copiedJourData ? "copied-km" : "default-km"}
-                  defaultValue={copiedJourData?.ind_kilometrique ?? ""}
-                  className="w-full px-3 py-2 rounded-lg border"
-                  style={{
-                    backgroundColor: "var(--color-bg)",
-                    borderColor: "var(--color-muted)",
-                  }}
-                />
-              </div>
-
-              <div className="flex items-center gap-4 pt-6">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="transport_materiel"
-                    key={copiedJourData ? "copied-trans" : "default-trans"}
-                    defaultChecked={copiedJourData?.transport_materiel ?? false}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm">Transport matériel</span>
-                </label>
-              </div>
-
-              <div className="flex items-center gap-4 pt-6">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="panier"
-                    key={copiedJourData ? "copied-panier" : "default-panier"}
-                    defaultChecked={copiedJourData?.panier ?? false}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm">Panier</span>
-                </label>
-              </div>
-            </div>
+            {/* Section Phases */}
+            <PhasesList
+              phases={newJourPhases}
+              typesPhases={typesPhases}
+              onAdd={handleAddPhaseToNewJour}
+              onUpdate={handleUpdateNewJourPhase}
+              onRemove={handleRemovePhaseFromNewJour}
+            />
 
             <div className="flex gap-3 justify-end">
               <button
                 type="button"
                 onClick={() => {
                   setShowCreateForm(false);
-                  setCopiedJourData(null);
+                  setNewJourPhases([]);
                 }}
                 className="btn-secondary"
               >
@@ -638,8 +975,9 @@ export default function ChantierDetailPage() {
                             </span>
                           )}
                           {jour.panier && (
-                            <span className="inline-flex items-center text-[var(--color-muted)]" 
-                                  title="Panier repas"
+                            <span
+                              className="inline-flex items-center text-[var(--color-muted)]"
+                              title="Panier repas"
                             >
                               <Utensils className="w-4 h-4" />
                             </span>
@@ -648,17 +986,20 @@ export default function ChantierDetailPage() {
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-6 gap-x-4 gap-y-1 text-sm text-[var(--color-muted)]">
                         <span>
-                          <span className="font-medium text-[var(--color-text)]">H. rend:</span> {jour.h_rendement ?? 0}
+                          <span className="font-medium text-[var(--color-text)]">H. rend:</span>{" "}
+                          {jour.h_rendement ?? 0}
                         </span>
                         <span>
                           <span className="font-medium text-[var(--color-text)]">Location:</span>{" "}
                           {jour.location_materiel ?? 0}€
                         </span>
                         <span>
-                          <span className="font-medium text-[var(--color-text)]">Km:</span> {jour.ind_kilometrique ?? 0}
+                          <span className="font-medium text-[var(--color-text)]">Km:</span>{" "}
+                          {jour.ind_kilometrique ?? 0}
                         </span>
                         <span>
-                          <span className="font-medium text-[var(--color-text)]">Phases:</span> {jour.phases.length}
+                          <span className="font-medium text-[var(--color-text)]">Phases:</span>{" "}
+                          {jour.phases.length}
                         </span>
                         <span className="col-span-2">
                           <span className="font-medium text-[var(--color-text)]">Durée:</span>{" "}
@@ -699,102 +1040,18 @@ export default function ChantierDetailPage() {
                       }}
                       className="space-y-4"
                     >
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Date</label>
-                          <input
-                            type="date"
-                            value={new Date(jour.date).toISOString().split("T")[0]}
-                            disabled
-                            className="w-full px-3 py-2 rounded-lg border opacity-60 cursor-not-allowed"
-                            style={{
-                              backgroundColor: "var(--color-bg)",
-                              borderColor: "var(--color-muted)",
-                            }}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium mb-1">H. rendement</label>
-                          <input
-                            type="number"
-                            name="h_rendement"
-                            min="0"
-                            defaultValue={jour.h_rendement || ""}
-                            placeholder="0"
-                            disabled={!!chantier.date_fin}
-                            className="w-full px-3 py-2 rounded-lg border disabled:opacity-60 disabled:cursor-not-allowed"
-                            style={{
-                              backgroundColor: "var(--color-bg)",
-                              borderColor: "var(--color-muted)",
-                            }}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium mb-1">
-                            Location matériel
-                          </label>
-                          <input
-                            type="number"
-                            name="location_materiel"
-                            min="0"
-                            defaultValue={jour.location_materiel || ""}
-                            placeholder="0"
-                            disabled={!!chantier.date_fin}
-                            className="w-full px-3 py-2 rounded-lg border disabled:opacity-60 disabled:cursor-not-allowed"
-                            style={{
-                              backgroundColor: "var(--color-bg)",
-                              borderColor: "var(--color-muted)",
-                            }}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium mb-1">
-                            Ind. kilométrique
-                          </label>
-                          <input
-                            type="number"
-                            name="ind_kilometrique"
-                            min="0"
-                            defaultValue={jour.ind_kilometrique || ""}
-                            placeholder="0"
-                            disabled={!!chantier.date_fin}
-                            className="w-full px-3 py-2 rounded-lg border disabled:opacity-60 disabled:cursor-not-allowed"
-                            style={{
-                              backgroundColor: "var(--color-bg)",
-                              borderColor: "var(--color-muted)",
-                            }}
-                          />
-                        </div>
-
-                        <div className="flex items-center gap-4 pt-6">
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              name="transport_materiel"
-                              defaultChecked={jour.transport_materiel}
-                              disabled={!!chantier.date_fin}
-                              className="w-4 h-4 disabled:opacity-60 disabled:cursor-not-allowed"
-                            />
-                            <span className="text-sm">Transport matériel</span>
-                          </label>
-                        </div>
-
-                        <div className="flex items-center gap-4 pt-6">
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              name="panier"
-                              defaultChecked={jour.panier}
-                              disabled={!!chantier.date_fin}
-                              className="w-4 h-4 disabled:opacity-60 disabled:cursor-not-allowed"
-                            />
-                            <span className="text-sm">Panier</span>
-                          </label>
-                        </div>
-                      </div>
+                      <JourFormFields
+                        showDate
+                        defaultDate={new Date(jour.date).toISOString().split("T")[0]}
+                        defaultValues={{
+                          h_rendement: jour.h_rendement,
+                          location_materiel: jour.location_materiel,
+                          ind_kilometrique: jour.ind_kilometrique,
+                          transport_materiel: jour.transport_materiel,
+                          panier: jour.panier,
+                        }}
+                        disabled={!!chantier.date_fin}
+                      />
 
                       {!chantier.date_fin && (
                         <div className="flex gap-3 justify-end">
@@ -830,87 +1087,11 @@ export default function ChantierDetailPage() {
 
                       {/* Formulaire d'ajout de phase */}
                       {showPhaseForm === jour.id && (
-                        <div
-                          className="mb-4 p-4 rounded-lg border"
-                          style={{
-                            backgroundColor: "var(--color-bg)",
-                            borderColor: "var(--color-muted)",
-                          }}
-                        >
-                          <form
-                            onSubmit={(e) => handleCreatePhase(jour.id, e)}
-                            className="space-y-3"
-                          >
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                              <div>
-                                <label className="block text-sm font-medium mb-1">Type *</label>
-                                <select
-                                  name="type"
-                                  required
-                                  className="w-full px-3 py-2 rounded-lg border"
-                                  style={{
-                                    backgroundColor: "var(--color-surface)",
-                                    borderColor: "var(--color-muted)",
-                                  }}
-                                >
-                                  <option value="">Sélectionner un type</option>
-                                  {typesPhases.map((tp) => (
-                                    <option key={tp.id} value={tp.name}>
-                                      {tp.name}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-
-                              <div>
-                                <label className="block text-sm font-medium mb-1">Heures *</label>
-                                <input
-                                  type="number"
-                                  name="hours"
-                                  required
-                                  min="0"
-                                  max="23"
-                                  defaultValue="0"
-                                  className="w-full px-3 py-2 rounded-lg border"
-                                  style={{
-                                    backgroundColor: "var(--color-surface)",
-                                    borderColor: "var(--color-muted)",
-                                  }}
-                                />
-                              </div>
-
-                              <div>
-                                <label className="block text-sm font-medium mb-1">Minutes *</label>
-                                <input
-                                  type="number"
-                                  name="minutes"
-                                  required
-                                  min="0"
-                                  max="59"
-                                  defaultValue="0"
-                                  className="w-full px-3 py-2 rounded-lg border"
-                                  style={{
-                                    backgroundColor: "var(--color-surface)",
-                                    borderColor: "var(--color-muted)",
-                                  }}
-                                />
-                              </div>
-                            </div>
-
-                            <div className="flex gap-2 justify-end">
-                              <button
-                                type="button"
-                                onClick={() => setShowPhaseForm(null)}
-                                className="btn-secondary text-sm"
-                              >
-                                Annuler
-                              </button>
-                              <button type="submit" className="btn-primary text-sm">
-                                Ajouter
-                              </button>
-                            </div>
-                          </form>
-                        </div>
+                        <PhaseAddForm
+                          typesPhases={typesPhases}
+                          onSubmit={(e) => handleCreatePhase(jour.id, e)}
+                          onCancel={() => setShowPhaseForm(null)}
+                        />
                       )}
 
                       {/* Liste des phases */}

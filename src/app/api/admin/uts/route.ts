@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
     }
 
-    const uts = await prisma.uT.findMany({
+    const uts = await prisma.ut.findMany({
       orderBy: { number: "asc" },
       include: {
         _count: {
@@ -45,14 +45,21 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { number } = body;
+    const { number, name } = body;
 
     if (!number || !number.trim()) {
       return NextResponse.json({ error: "Numéro requis" }, { status: 400 });
     }
 
-    const ut = await prisma.uT.create({
-      data: { number: number.trim() },
+    if (!name || !name.trim()) {
+      return NextResponse.json({ error: "Nom requis" }, { status: 400 });
+    }
+
+    const ut = await prisma.ut.create({
+      data: { 
+        number: number.trim(),
+        name: name.trim(),
+      },
     });
 
     return NextResponse.json(ut);

@@ -6,6 +6,7 @@ import { Plus, Pencil, Trash2 } from "lucide-react";
 type UT = {
   id: string;
   number: string;
+  name: string;
   _count: {
     users: number;
     agences: number;
@@ -18,6 +19,7 @@ export default function UTsTab() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formNumber, setFormNumber] = useState("");
+  const [formName, setFormName] = useState("");
 
   useEffect(() => {
     fetchUTs();
@@ -39,7 +41,7 @@ export default function UTsTab() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!formNumber.trim()) return;
+    if (!formNumber.trim() || !formName.trim()) return;
 
     try {
       const url = editingId ? `/api/admin/uts/${editingId}` : "/api/admin/uts";
@@ -48,7 +50,7 @@ export default function UTsTab() {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ number: formNumber }),
+        body: JSON.stringify({ number: formNumber, name: formName }),
       });
 
       if (res.ok) {
@@ -64,8 +66,8 @@ export default function UTsTab() {
     }
   }
 
-  async function handleDelete(id: string, number: string) {
-    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'UT "${number}" ?`)) {
+  async function handleDelete(id: string, name: string) {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'UT "${name}" ?`)) {
       return;
     }
 
@@ -89,11 +91,13 @@ export default function UTsTab() {
   function handleEdit(ut: UT) {
     setEditingId(ut.id);
     setFormNumber(ut.number);
+    setFormName(ut.name);
   }
 
   function handleCancel() {
     setEditingId(null);
     setFormNumber("");
+    setFormName("");
   }
 
   if (loading) {
@@ -126,13 +130,13 @@ export default function UTsTab() {
           }}
         >
           <h3 className="font-semibold mb-3">Nouvelle UT</h3>
-          <form onSubmit={handleSubmit} className="flex gap-3">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <input
               type="text"
               value={formNumber}
               onChange={(e) => setFormNumber(e.target.value)}
-              placeholder="Numéro de l'UT"
-              className="flex-1 px-3 py-2 rounded-lg border"
+              placeholder="Numéro de l'UT (ex: 02)"
+              className="px-3 py-2 rounded-lg border"
               style={{
                 backgroundColor: "var(--color-bg)",
                 borderColor: "var(--color-muted)",
@@ -140,19 +144,34 @@ export default function UTsTab() {
               required
               autoFocus
             />
-            <button type="submit" className="btn-primary">
-              Créer
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowForm(false);
-                setFormNumber("");
+            <input
+              type="text"
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+              placeholder="Nom de l'UT (ex: Kaysersberg)"
+              className="px-3 py-2 rounded-lg border"
+              style={{
+                backgroundColor: "var(--color-bg)",
+                borderColor: "var(--color-muted)",
               }}
-              className="btn-secondary"
-            >
-              Annuler
-            </button>
+              required
+            />
+            <div className="md:col-span-2 flex gap-3">
+              <button type="submit" className="btn-primary">
+                Créer
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForm(false);
+                  setFormNumber("");
+                  setFormName("");
+                }}
+                className="btn-secondary"
+              >
+                Annuler
+              </button>
+            </div>
           </form>
         </div>
       )}
@@ -166,14 +185,14 @@ export default function UTsTab() {
             borderColor: "var(--color-muted)",
           }}
         >
-          <p className="text-[var(--color-muted)]">Aucune UT</p>
+          <p className="text-[var(--color-muted)] mb-4">Aucune UT enregistrée</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {uts.map((ut) => (
             <div
               key={ut.id}
-              className="rounded-lg border hover:shadow-md transition-shadow"
+              className="rounded-lg border"
               style={{
                 backgroundColor: "var(--color-surface)",
                 borderColor: "var(--color-muted)",
@@ -182,13 +201,13 @@ export default function UTsTab() {
               {editingId === ut.id ? (
                 // Mode édition inline
                 <form onSubmit={handleSubmit} className="p-4">
-                  <div className="flex gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <input
                       type="text"
                       value={formNumber}
                       onChange={(e) => setFormNumber(e.target.value)}
                       placeholder="Numéro de l'UT"
-                      className="flex-1 px-3 py-2 rounded-lg border"
+                      className="px-3 py-2 rounded-lg border"
                       style={{
                         backgroundColor: "var(--color-bg)",
                         borderColor: "var(--color-muted)",
@@ -196,19 +215,35 @@ export default function UTsTab() {
                       required
                       autoFocus
                     />
-                    <button type="submit" className="btn-primary">
-                      Enregistrer
-                    </button>
-                    <button type="button" onClick={handleCancel} className="btn-secondary">
-                      Annuler
-                    </button>
+                    <input
+                      type="text"
+                      value={formName}
+                      onChange={(e) => setFormName(e.target.value)}
+                      placeholder="Nom de l'UT"
+                      className="px-3 py-2 rounded-lg border"
+                      style={{
+                        backgroundColor: "var(--color-bg)",
+                        borderColor: "var(--color-muted)",
+                      }}
+                      required
+                    />
+                    <div className="md:col-span-2 flex gap-3">
+                      <button type="submit" className="btn-primary">
+                        Enregistrer
+                      </button>
+                      <button type="button" onClick={handleCancel} className="btn-secondary">
+                        Annuler
+                      </button>
+                    </div>
                   </div>
                 </form>
               ) : (
                 // Mode affichage normal
                 <div className="flex items-center justify-between p-4">
                   <div>
-                    <h3 className="font-semibold">UT {ut.number}</h3>
+                    <h3 className="font-semibold">
+                      UT {ut.number} - {ut.name}
+                    </h3>
                     <p className="text-sm text-[var(--color-muted)]">
                       {ut._count.users} utilisateur{ut._count.users > 1 ? "s" : ""} •{" "}
                       {ut._count.agences} agence{ut._count.agences > 1 ? "s" : ""}
@@ -223,7 +258,7 @@ export default function UTsTab() {
                       <Pencil className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(ut.id, ut.number)}
+                      onClick={() => handleDelete(ut.id, ut.name)}
                       className="p-2 rounded hover:bg-[var(--color-bg)] transition-colors text-[var(--color-danger)]"
                       title="Supprimer"
                     >
