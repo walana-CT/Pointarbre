@@ -107,6 +107,34 @@ async function main() {
 
   console.log("✅ Types de phases créés:", typePhases.length);
 
+  const UTs = [
+    { name: "Kaysersberg", number: "02" },
+    { name: "Ribeauvillé", number: "03" },
+    { name: "Guebwiller-Thur", number: "05" },
+    { name: "Colmar-Rouffach", number: "07" },
+    { name: "Munster", number: "08" },
+    { name: "Saint-Amarin", number: "13" },
+    { name: "Harth", number: "14" },
+    { name: "Doller-Basse Largue", number: "15" },
+    { name: "Sundgau", number: "16" },
+    { name: "Jura Alsascien", number: "17" },
+  ];
+
+  for (const ut of UTs) {
+    await prisma.ut.upsert({
+      where: { name: ut.name },
+      update: {},
+      create: ut,
+    });
+  }
+
+  console.log("✅ UTs créées:", UTs.length);
+
+  // Récupérer une UT pour l'assigner au bucheron
+  const utKaysersberg = await prisma.ut.findUnique({
+    where: { name: "Kaysersberg" },
+  });
+
   // Hash du mot de passe "admin" pour l'utilisateur administrateur
   const adminPasswordHash = await argon2.hash("rob");
 
@@ -129,7 +157,7 @@ async function main() {
     role: adminUser.role,
   });
 
-  // Créer un utilisateur de test (role USER par défaut)
+  // Créer un utilisateur de test (role OUVRIER par défaut)
   const testUserPasswordHash = await argon2.hash("bois");
   const testUser = await prisma.user.upsert({
     where: { email: "bucheron@mail.com" },
@@ -139,6 +167,9 @@ async function main() {
       name: "Coupeur2bois",
       passwordHash: testUserPasswordHash,
       role: "OUVRIER",
+      ut: {
+        connect: utKaysersberg ? [{ id: utKaysersberg.id }] : [],
+      },
     },
   });
 

@@ -21,10 +21,10 @@ model User {
   updatedAt    DateTime  @updatedAt
   sessions     Session[]
 
-  ut        UT[]       @relation("UserUTs")
-  agenceId  String?
-  agence    Agence?    @relation(fields: [agenceId], references: [id])
-  chantiers Chantier[]
+  ut           Ut[]       @relation("UserUTs")
+  agenceId     String?
+  agence       Agence?    @relation(fields: [agenceId], references: [id])
+  chantiers    Chantier[]
 
   @@map("user")
 }
@@ -49,15 +49,16 @@ enum Role {
 model Agence {
   id    String @id @default(cuid())
   name  String
-  uts   UT[]   @relation("AgenceUTs")
+  uts   Ut[]   @relation("AgenceUTs")
   users User[]
 
   @@map("agence")
 }
 
-model UT {
+model Ut {
   id      String   @id @default(cuid())
   number  String
+  name     String  @unique
   agences Agence[] @relation("AgenceUTs")
   users   User[]   @relation("UserUTs")
 
