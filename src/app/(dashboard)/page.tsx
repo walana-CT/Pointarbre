@@ -21,7 +21,7 @@ export default async function Home() {
         {/* Mes chantiers */}
         <Link
           href="/chantiers"
-          className="block p-8 rounded-lg border transition-all hover:shadow-lg border-4"
+          className="block p-8 rounded-lg transition-all hover:shadow-lg border-4"
           style={{
             backgroundColor: "var(--color-surface)",
             borderColor: "var(--color-muted)",
@@ -34,7 +34,7 @@ export default async function Home() {
         {/* Archives */}
         <Link
           href="/archives"
-          className="block p-8 rounded-lg border transition-all hover:shadow-lg border-4"
+          className="block p-8 rounded-lg transition-all hover:shadow-lg border-4"
           style={{
             backgroundColor: "var(--color-surface)",
             borderColor: "var(--color-muted)",
@@ -48,7 +48,7 @@ export default async function Home() {
         {isCMOorAdmin && (
           <Link
             href="/cmo"
-            className="block p-8 rounded-lg border transition-all hover:shadow-lg border-4"
+            className="block p-8 rounded-lg transition-all hover:shadow-lg border-4"
             style={{
               backgroundColor: "var(--color-surface)",
               borderColor: "var(--color-muted)",
@@ -63,7 +63,7 @@ export default async function Home() {
         {isAdmin && (
           <Link
             href="/admin"
-            className="block p-8 rounded-lg border transition-all hover:shadow-lg border-4"
+            className="block p-8 rounded-lg transition-all hover:shadow-lg border-4"
             style={{
               backgroundColor: "var(--color-surface)",
               borderColor: "var(--color-muted)",
