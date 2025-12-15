@@ -15,8 +15,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
     }
 
+    // Récupérer le paramètre archived depuis l'URL
+    const { searchParams } = new URL(req.url);
+    const archived = searchParams.get("archived") === "true";
+
     const chantiers = await prisma.chantier.findMany({
-      where: { userId: user.id },
+      where: {
+        userId: user.id,
+        // Si archived=true, on prend les chantiers avec date_cloture
+        // Sinon, on prend ceux sans date_cloture (actifs)
+        date_cloture: archived ? { not: null } : null,
+      },
       orderBy: { date_debut: "desc" },
       include: {
         jours: {

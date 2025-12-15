@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { Plus, ArrowLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { Plus, ArrowLeft, ChevronRight, ChevronDown, Truck, Utensils } from "lucide-react";
 
 type Phase = {
   id: string;
@@ -389,7 +389,7 @@ export default function ChantierDetailPage() {
         }}
       >
         <h1 className="text-3xl sm:text-4xl font-bold mb-4">{chantier.foret}</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+        <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <span className="text-[var(--color-muted)]">Triage:</span>
             <p className="font-medium">{chantier.triage}</p>
@@ -614,31 +614,56 @@ export default function ChantierDetailPage() {
               >
                 {/* En-tête de la ligne - toujours visible */}
                 <div
-                  className="p-4 cursor-pointer hover:bg-[var(--color-bg)] transition-colors outline-none focus:outline-none"
+                  className="p-4 cursor-pointer hover:bg-[var(--color-bg)] transition-colors outline-none focus:outline-none rounded-lg"
                   onClick={() => setExpandedJourId(isExpanded ? null : jour.id)}
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-1">
-                        {new Date(jour.date).toLocaleDateString("fr-FR", {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </h3>
-                      <div className="flex flex-wrap gap-3 text-sm text-[var(--color-muted)]">
-                        {jour.h_rendement !== null && <span>H. rend: {jour.h_rendement}</span>}
-                        {jour.location_materiel !== null && (
-                          <span>Location: {jour.location_materiel}€</span>
-                        )}
-                        {jour.ind_kilometrique !== null && <span>Km: {jour.ind_kilometrique}</span>}
-                        {jour.transport_materiel && <span>🚚</span>}
-                        {jour.panier && <span>🍴</span>}
+                      <div className="flex items-center gap-2 mb-3">
+                        <h3 className="font-semibold text-lg">
+                          {new Date(jour.date).toLocaleDateString("fr-FR", {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                          {jour.transport_materiel && (
+                            <span
+                              className="inline-flex items-center text-[var(--color-muted)]"
+                              title="Transport de matériel"
+                            >
+                              <Truck className="w-4 h-4" />
+                            </span>
+                          )}
+                          {jour.panier && (
+                            <span className="inline-flex items-center text-[var(--color-muted)]" 
+                                  title="Panier repas"
+                            >
+                              <Utensils className="w-4 h-4" />
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-6 gap-x-4 gap-y-1 text-sm text-[var(--color-muted)]">
                         <span>
-                          • {jour.phases.length} phase{jour.phases.length > 1 ? "s" : ""}
+                          <span className="font-medium text-[var(--color-text)]">H. rend:</span> {jour.h_rendement ?? 0}
                         </span>
-                        <span>• Durée: {calculateTotalDuration(jour.phases)}</span>
+                        <span>
+                          <span className="font-medium text-[var(--color-text)]">Location:</span>{" "}
+                          {jour.location_materiel ?? 0}€
+                        </span>
+                        <span>
+                          <span className="font-medium text-[var(--color-text)]">Km:</span> {jour.ind_kilometrique ?? 0}
+                        </span>
+                        <span>
+                          <span className="font-medium text-[var(--color-text)]">Phases:</span> {jour.phases.length}
+                        </span>
+                        <span className="col-span-2">
+                          <span className="font-medium text-[var(--color-text)]">Durée:</span>{" "}
+                          {calculateTotalDuration(jour.phases)}
+                        </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">

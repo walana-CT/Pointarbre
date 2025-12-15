@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Plus, X } from "lucide-react";
 
 type Chantier = {
   id: string;
@@ -20,6 +21,7 @@ type Triage = { id: string; name: string };
 type Parcelle = { id: string; name: string; foretId: string };
 
 export default function ChantiersPage() {
+  const router = useRouter();
   const [chantiers, setChantiers] = useState<Chantier[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -167,9 +169,12 @@ export default function ChantiersPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 sm:py-12">
-      <div className="mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <Link href="/" className="text-[var(--color-primary)] hover:underline text-sm">
           ← Retour à l'accueil
+        </Link>
+        <Link href="/archives" className="text-[var(--color-primary)] hover:underline text-sm">
+          Voir les archives →
         </Link>
       </div>
 
@@ -322,13 +327,25 @@ export default function ChantiersPage() {
           {chantiers.map((chantier) => (
             <div
               key={chantier.id}
-              className="p-6 rounded-lg border hover:shadow-lg transition-shadow"
+              className="relative p-6 rounded-lg border hover:shadow-lg transition-shadow cursor-pointer"
               style={{
                 backgroundColor: "var(--color-surface)",
                 borderColor: "var(--color-muted)",
               }}
+              onClick={() => router.push(`/chantiers/${chantier.id}`)}
             >
-              <div className="mb-3">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteChantier(chantier.id);
+                }}
+                className="absolute top-4 right-4 btn-danger px-3 py-1"
+                title="Supprimer"
+              >
+                ✕
+              </button>
+
+              <div className="mb-3 pr-8">
                 <h3 className="font-semibold text-lg mb-1 text-[var(--color-text-secondary)]">
                   {chantier.foret}
                 </h3>
@@ -337,13 +354,13 @@ export default function ChantiersPage() {
                 </p>
               </div>
 
-              <div className="space-y-1 text-sm mb-4">
+              <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-[var(--color-muted)]">Début:</span>
+                  <span className="text-[var(--color-text)]">Début:</span>
                   <span>{new Date(chantier.date_debut).toLocaleDateString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[var(--color-muted)]">Fin:</span>
+                  <span className="text-[var(--color-text)]">Fin:</span>
                   <span>
                     {chantier.date_fin
                       ? new Date(chantier.date_fin).toLocaleDateString()
@@ -351,25 +368,9 @@ export default function ChantiersPage() {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[var(--color-muted)]">Jours:</span>
+                  <span className="text-[var(--color-text)]">Jours:</span>
                   <span className="font-medium">{chantier.jours.length}</span>
                 </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Link
-                  href={`/chantiers/${chantier.id}`}
-                  className="block text-center btn-secondary flex-1"
-                >
-                  Voir détails
-                </Link>
-                <button
-                  onClick={() => handleDeleteChantier(chantier.id)}
-                  className="btn-danger px-3"
-                  title="Supprimer"
-                >
-                  ✕
-                </button>
               </div>
             </div>
           ))}
