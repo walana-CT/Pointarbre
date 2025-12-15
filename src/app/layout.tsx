@@ -34,10 +34,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <ThemeToggle />
               {user ? (
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="text-xs sm:text-sm hidden sm:block">
+                  <Link 
+                    href="/profil" 
+                    className="text-xs sm:text-sm hidden sm:block hover:opacity-80 transition-opacity"
+                  >
                     <div className="font-medium">{user.name ?? user.email}</div>
                     <div className="text-xs text-[var(--color-muted)]">{user.email}</div>
-                  </div>
+                  </Link>
                   <LogoutButton />
                 </div>
               ) : (

@@ -98,7 +98,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         where: { id },
         data: {
           date_fin: null,
-          date_cloture: null,
         },
       });
 

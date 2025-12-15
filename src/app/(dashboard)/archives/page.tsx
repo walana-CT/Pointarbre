@@ -76,11 +76,11 @@ export default function ArchivesPage() {
     <div className="max-w-7xl mx-auto px-4 py-6 sm:py-12">
       <div className="mb-6">
         <Link
-          href="/chantiers"
+          href="/chantie"
           className="text-[var(--color-primary)] hover:underline text-sm inline-flex items-center gap-1"
         >
           <ArrowLeft className="w-4 h-4" />
-          Retour aux chantiers
+          Retour aux à l'accueil
         </Link>
       </div>
 

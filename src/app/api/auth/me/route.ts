@@ -1,14 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
-import { parseTokenFromCookieHeader, getUserFromToken } from "@/lib/auth";
+import { parseTokenFromCookieHeader } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+import { hashToken } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
     const cookieHeader = req.headers.get("cookie") || "";
     const token = parseTokenFromCookieHeader(cookieHeader);
-    const user = await getUserFromToken(token || undefined);
-    if (!user) return NextResponse.json({ user: null }, { status: 200 });
+    if (!token) return NextResponse.json({ user: null }, { status: 200 });
+
+    const tokenHash = hashToken(token);
+    const session = await prisma.session.findUnique({
+      where: { tokenHash },
+      include: {
+        user: {
+          include: {
+            ut: {
+              select: {
+                id: true,
+                number: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!session || session.expiresAt < new Date() || session.user.isDisabled) {
+      return NextResponse.json({ user: null }, { status: 200 });
+    }
+
     return NextResponse.json(
-      { user: { id: user.id, email: user.email, name: user.name, role: user.role } },
+      {
+        user: {
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.name,
+          role: session.user.role,
+          createdAt: session.user.createdAt,
+          isDisabled: session.user.isDisabled,
+          uts: session.user.ut,
+        },
+      },
       { status: 200 }
     );
   } catch (err) {
