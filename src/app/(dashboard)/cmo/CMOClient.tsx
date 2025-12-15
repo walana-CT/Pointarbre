@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Download, FileText, Printer } from "lucide-react";
+import { Download, Printer } from "lucide-react";
 
 interface Jour {
   id: string;

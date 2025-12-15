@@ -86,7 +86,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         where: { id },
         data: {
           date_fin: lastJour.date,
-          date_cloture: lastJour.date,
         },
       });
 
