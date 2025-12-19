@@ -98,7 +98,6 @@ model Chantier {
   id           String    @id @default(cuid())
   date_debut   DateTime
   date_fin     DateTime?
-  date_cloture DateTime?
   foret        String
   triage       String
   parcelle     String

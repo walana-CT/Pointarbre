@@ -8,8 +8,7 @@ import { ArrowLeft, Filter } from "lucide-react";
 type Chantier = {
   id: string;
   date_debut: string;
-  date_fin: string | null;
-  date_cloture: string;
+  date_fin: string;
   foret: string;
   triage: string;
   parcelle: string;
@@ -43,14 +42,14 @@ export default function ArchivesPage() {
 
   // Obtenir les années disponibles depuis les chantiers
   const availableYears = Array.from(
-    new Set(chantiers.map((c) => new Date(c.date_cloture).getFullYear().toString()))
+    new Set(chantiers.map((c) => new Date(c.date_fin).getFullYear().toString()))
   ).sort((a, b) => parseInt(b) - parseInt(a));
 
   // Filtrer les chantiers
   const filteredChantiers = chantiers.filter((chantier) => {
-    const clotureDate = new Date(chantier.date_cloture);
-    const year = clotureDate.getFullYear().toString();
-    const month = (clotureDate.getMonth() + 1).toString().padStart(2, "0");
+    const finDate = new Date(chantier.date_fin);
+    const year = finDate.getFullYear().toString();
+    const month = (finDate.getMonth() + 1).toString().padStart(2, "0");
 
     if (selectedYear && year !== selectedYear) return false;
     if (selectedMonth && month !== selectedMonth) return false;
@@ -76,7 +75,7 @@ export default function ArchivesPage() {
     <div className="max-w-7xl mx-auto px-4 py-6 sm:py-12">
       <div className="mb-6">
         <Link
-          href="/chantie"
+          href="/chantiers"
           className="text-[var(--color-primary)] hover:underline text-sm inline-flex items-center gap-1"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -205,15 +204,9 @@ export default function ArchivesPage() {
                     <span>{new Date(chantier.date_debut).toLocaleDateString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[var(--color-text)]">Fin:</span>
-                    <span>
-                      {chantier.date_fin ? new Date(chantier.date_fin).toLocaleDateString() : "—"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[var(--color-text)]">Clôturé:</span>
+                    <span className="text-[var(--color-text)]">Terminé le:</span>
                     <span className="font-medium">
-                      {new Date(chantier.date_cloture).toLocaleDateString()}
+                      {new Date(chantier.date_fin).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex justify-between">

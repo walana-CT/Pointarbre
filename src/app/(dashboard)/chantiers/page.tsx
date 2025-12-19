@@ -9,7 +9,6 @@ type Chantier = {
   id: string;
   date_debut: string;
   date_fin: string | null;
-  date_cloture: string | null;
   foret: string;
   triage: string;
   parcelle: string;

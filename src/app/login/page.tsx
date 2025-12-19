@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import ThemeToggle from "@/components/ThemeToggle";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {

@@ -4,7 +4,7 @@ import { getUserFromToken } from "@/lib/auth";
 import { hash } from "argon2";
 
 // PATCH /api/admin/users/[id] - Modifier un utilisateur
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const token = req.cookies.get("session")?.value;
   const user = token ? await getUserFromToken(token) : null;
 
@@ -13,7 +13,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   try {
-    const id = parseInt(params.id);
+    const { id: idStr } = await params;
+    const id = parseInt(idStr);
     const body = await req.json();
     const { email, name, password, role, agenceId, utIds, isDisabled } = body;
 
@@ -83,7 +84,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 }
 
 // DELETE /api/admin/users/[id] - Supprimer un utilisateur
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const token = req.cookies.get("session")?.value;
   const user = token ? await getUserFromToken(token) : null;
 
@@ -92,7 +93,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   }
 
   try {
-    const id = parseInt(params.id);
+    const { id: idStr } = await params;
+    const id = parseInt(idStr);
 
     // Vérifier que l'utilisateur existe et n'est pas admin
     const existingUser = await prisma.user.findUnique({

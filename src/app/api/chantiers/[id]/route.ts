@@ -92,7 +92,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json(updatedChantier);
     }
 
-    // Si action=reopen, remettre date_fin et date_cloture à null
+    // Si action=reopen, remettre date_fin à null
     if (body.action === "reopen") {
       const updatedChantier = await prisma.chantier.update({
         where: { id },

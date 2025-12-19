@@ -26,7 +26,6 @@ type Chantier = {
   id: string;
   date_debut: string;
   date_fin: string | null;
-  date_cloture: string | null;
   foret: string;
   triage: string;
   parcelle: string;
@@ -697,7 +696,7 @@ export default function ChantierDetailPage() {
   async function handleReopenChantier() {
     if (
       !confirm(
-        "Êtes-vous sûr de vouloir rouvrir ce chantier ? Les dates de fin et de clôture seront supprimées."
+        "Êtes-vous sûr de vouloir rouvrir ce chantier ? La date de fin sera supprimée."
       )
     ) {
       return;

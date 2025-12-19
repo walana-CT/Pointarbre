@@ -9,7 +9,7 @@ interface Params {
  * GET /api/users/[id]
  * Récupère un utilisateur spécifique
  */
-export async function GET(req: NextRequest, { params }: { params: Promise<Params> }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<Params> }) {
   try {
     const { id } = await params;
     const userId = parseInt(id, 10);
@@ -78,7 +78,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<Params
  * DELETE /api/users/[id]
  * Supprime un utilisateur
  */
-export async function DELETE(req: NextRequest, { params }: { params: Promise<Params> }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<Params> }) {
   try {
     const { id } = await params;
     const userId = parseInt(id, 10);

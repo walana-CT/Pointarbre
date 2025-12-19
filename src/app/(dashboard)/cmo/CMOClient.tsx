@@ -27,7 +27,6 @@ interface Chantier {
   parcelle: string;
   date_debut: string;
   date_fin: string | null;
-  date_cloture: string | null;
   jours: Jour[];
 }
 

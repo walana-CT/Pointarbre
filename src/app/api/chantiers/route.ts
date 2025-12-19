@@ -22,9 +22,9 @@ export async function GET(req: NextRequest) {
     const chantiers = await prisma.chantier.findMany({
       where: {
         userId: user.id,
-        // Si archived=true, on prend les chantiers avec date_cloture
-        // Sinon, on prend ceux sans date_cloture (actifs)
-        date_cloture: archived ? { not: null } : null,
+        // Si archived=true, on prend les chantiers avec date_fin
+        // Sinon, on prend ceux sans date_fin (actifs)
+        date_fin: archived ? { not: null } : null,
       },
       orderBy: { date_debut: "desc" },
       include: {
@@ -68,7 +68,6 @@ export async function POST(req: NextRequest) {
       data: {
         date_debut: dateDebut,
         date_fin: null,
-        date_cloture: null,
         foret,
         triage,
         parcelle,
