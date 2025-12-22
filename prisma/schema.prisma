@@ -21,12 +21,28 @@ model User {
   updatedAt    DateTime  @updatedAt
   sessions     Session[]
 
-  ut           Ut[]       @relation("UserUTs")
-  agenceId     String?
-  agence       Agence?    @relation(fields: [agenceId], references: [id])
-  chantiers    Chantier[]
+  ut        Ut[]       @relation("UserUTs")
+  agenceId  String?
+  agence    Agence?    @relation(fields: [agenceId], references: [id])
+  chantiers Chantier[]
+
+  // Relations CMO-Ouvriers
+  cmoForWorkers CmoOuvrier[] @relation("CMO")
+  workerForCmos CmoOuvrier[] @relation("Ouvrier")
 
   @@map("user")
+}
+
+model CmoOuvrier {
+  id        String   @id @default(cuid())
+  cmoId     Int
+  cmo       User     @relation("CMO", fields: [cmoId], references: [id], onDelete: Cascade)
+  ouvrierId Int
+  ouvrier   User     @relation("Ouvrier", fields: [ouvrierId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([cmoId, ouvrierId])
+  @@map("cmo_ouvrier")
 }
 
 model Session {
@@ -58,7 +74,7 @@ model Agence {
 model Ut {
   id      String   @id @default(cuid())
   number  String
-  name     String  @unique
+  name    String   @unique
   agences Agence[] @relation("AgenceUTs")
   users   User[]   @relation("UserUTs")
 
@@ -95,12 +111,12 @@ model Parcelle {
 }
 
 model Chantier {
-  id           String    @id @default(cuid())
-  date_debut   DateTime
-  date_fin     DateTime?
-  foret        String
-  triage       String
-  parcelle     String
+  id         String    @id @default(cuid())
+  date_debut DateTime
+  date_fin   DateTime?
+  foret      String
+  triage     String
+  parcelle   String
 
   userId Int
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)

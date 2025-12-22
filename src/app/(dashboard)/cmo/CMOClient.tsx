@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Download, Printer } from "lucide-react";
+import { Download, Printer, Users } from "lucide-react";
+import Link from "next/link";
 
 interface Jour {
   id: string;
@@ -407,6 +408,22 @@ export default function CMOClient() {
 
   return (
     <div>
+      {/* Lien vers la gestion des ouvriers */}
+      <div className="mb-6">
+        <Link
+          href="/cmo/ouvriers"
+          className="btn btn-primary"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.5rem",
+          }}
+        >
+          <Users size={20} />
+          Gérer mes ouvriers
+        </Link>
+      </div>
+
       {/* Filtres */}
       <div
         className="mb-6 p-6 rounded-lg border"
