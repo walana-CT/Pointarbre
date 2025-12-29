@@ -50,7 +50,8 @@ export async function GET(req: NextRequest) {
       },
       select: {
         id: true,
-        name: true,
+        nom: true,
+        prenom: true,
         email: true,
       },
     });
@@ -113,7 +114,8 @@ export async function GET(req: NextRequest) {
         return {
           ouvrier: {
             id: ouvrier.id,
-            name: ouvrier.name,
+            nom: ouvrier.nom,
+            prenom: ouvrier.prenom,
             email: ouvrier.email,
           },
           chantiers,

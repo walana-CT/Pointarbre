@@ -125,7 +125,7 @@ export default function LoginPage() {
               <span className="font-semibold">Admin:</span> rob@mail.com / rob
             </p>
             <p className="font-mono text-xs">
-              <span className="font-semibold">User:</span> bucheron@mail.com / bois
+              <span className="font-semibold">User:</span> jean.chene@mail.com / chene
             </p>
           </div>
         </div>

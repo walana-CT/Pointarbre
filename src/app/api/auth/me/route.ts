@@ -36,7 +36,8 @@ export async function GET(req: NextRequest) {
         user: {
           id: session.user.id,
           email: session.user.email,
-          name: session.user.name,
+          nom: session.user.nom,
+          prenom: session.user.prenom,
           role: session.user.role,
           createdAt: session.user.createdAt,
           isDisabled: session.user.isDisabled,

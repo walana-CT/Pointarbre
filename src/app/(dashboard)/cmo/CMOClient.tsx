@@ -34,7 +34,8 @@ interface Chantier {
 interface OuvrierData {
   ouvrier: {
     id: number;
-    name: string | null;
+    nom: string | null;
+    prenom: string | null;
     email: string;
   };
   chantiers: Chantier[];
@@ -125,7 +126,8 @@ export default function CMOClient() {
       chantier.jours.forEach((jour) => {
         const phases = jour.phases.map((p) => `${p.type} (${p.duree})`).join("; ");
         rows.push([
-          ouvrierData.ouvrier.name || "",
+          ouvrierData.ouvrier.nom || "",
+          ouvrierData.ouvrier.prenom || "",
           ouvrierData.ouvrier.email,
           selectedMonth.toString(),
           selectedYear.toString(),
@@ -174,7 +176,7 @@ export default function CMOClient() {
     link.setAttribute("href", url);
     link.setAttribute(
       "download",
-      `CMO_${ouvrierData.ouvrier.name}_${selectedMonth}-${selectedYear}.csv`
+      `CMO_${ouvrierData.ouvrier.nom}_${ouvrierData.ouvrier.prenom}_${selectedMonth}-${selectedYear}.csv`
     );
     link.style.visibility = "hidden";
     document.body.appendChild(link);
@@ -205,7 +207,7 @@ export default function CMOClient() {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Fiche CMO - ${ouvrierData.ouvrier.name}</title>
+          <title>Fiche CMO - ${ouvrierData.ouvrier.prenom} ${ouvrierData.ouvrier.nom}</title>
           <style>
             body {
               font-family: Arial, sans-serif;
@@ -300,7 +302,7 @@ export default function CMOClient() {
           <h1>Fiche récapitulative CMO</h1>
           <div class="header">
             <div class="info-row">
-              <span><span class="info-label">Ouvrier:</span> ${ouvrierData.ouvrier.name || "N/A"}</span>
+              <span><span class="info-label">Ouvrier:</span>  ${ouvrierData.ouvrier.prenom} ${ouvrierData.ouvrier.nom}</span>
               <span><span class="info-label">Email:</span> ${ouvrierData.ouvrier.email}</span>
             </div>
             <div class="info-row">
@@ -537,7 +539,8 @@ export default function CMOClient() {
               >
                 <div>
                   <h3 className="font-semibold text-lg">
-                    {ouvrierData.ouvrier.name || "Sans nom"}
+                    {ouvrierData.ouvrier.nom}
+                    {ouvrierData.ouvrier.prenom}
                   </h3>
                   <p className="text-sm text-[var(--color-muted)]">{ouvrierData.ouvrier.email}</p>
                 </div>

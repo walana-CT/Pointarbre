@@ -38,7 +38,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     href="/profil" 
                     className="text-xs sm:text-sm hidden sm:block hover:opacity-80 transition-opacity"
                   >
-                    <div className="font-medium">{user.name ?? user.email}</div>
+                    <div className="font-medium">{user.prenom} {user.nom}</div>
                     <div className="text-xs text-[var(--color-muted)]">{user.email}</div>
                   </Link>
                   <LogoutButton />

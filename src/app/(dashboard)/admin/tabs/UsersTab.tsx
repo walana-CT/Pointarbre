@@ -6,7 +6,8 @@ import { Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 type User = {
   id: number;
   email: string;
-  name: string | null;
+  nom: string | null;
+  prenom: string | null;
   role: "CMO" | "OUVRIER";
   isDisabled: boolean;
   agenceId: string | null;
@@ -39,7 +40,8 @@ export default function UsersTab() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     email: "",
-    name: "",
+    nom: "",
+    prenom: "",
     password: "",
     role: "OUVRIER" as "CMO" | "OUVRIER",
     agenceId: "",
@@ -105,7 +107,8 @@ export default function UsersTab() {
 
       const payload: any = {
         email: formData.email,
-        name: formData.name || null,
+        nom: formData.nom || null,
+        prenom: formData.prenom || null,
         role: formData.role,
         agenceId: formData.agenceId || null,
         utIds: formData.utIds,
@@ -162,7 +165,8 @@ export default function UsersTab() {
     setEditingId(user.id);
     setFormData({
       email: user.email,
-      name: user.name || "",
+      nom: user.nom || "",
+      prenom: user.prenom || "",
       password: "", // Ne pas pré-remplir le mot de passe
       role: user.role,
       agenceId: user.agenceId || "",
@@ -176,7 +180,8 @@ export default function UsersTab() {
     setEditingId(null);
     setFormData({
       email: "",
-      name: "",
+      nom: "",
+      prenom: "",
       password: "",
       role: "OUVRIER",
       agenceId: "",
@@ -218,9 +223,20 @@ export default function UsersTab() {
           />
           <input
             type="text"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="Nom (optionnel)"
+            value={formData.nom}
+            onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
+            placeholder="Nom"
+            className="px-3 py-2 rounded-lg border"
+            style={{
+              backgroundColor: "var(--color-bg)",
+              borderColor: "var(--color-muted)",
+            }}
+          />
+          <input
+            type="text"
+            value={formData.nom}
+            onChange={(e) => setFormData({ ...formData, prenom: e.target.value })}
+            placeholder="Prenom"
             className="px-3 py-2 rounded-lg border"
             style={{
               backgroundColor: "var(--color-bg)",
@@ -425,7 +441,7 @@ export default function UsersTab() {
                       </span>
                     </div>
                     <div className="text-sm text-[var(--color-muted)] mt-1">
-                      {user.name && <span>{user.name} • </span>}
+                      {user.nom && <span>{user.nom} • </span>}
                       {user.agence && <span>Agence: {user.agence.name} • </span>}
                       {user.ut.length > 0 && (
                         <span>UTs: {user.ut.map((ut) => ut.number).join(", ")}</span>

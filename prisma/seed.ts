@@ -144,7 +144,8 @@ async function main() {
     update: {},
     create: {
       email: "rob@mail.com",
-      name: "Administrator",
+      nom: "ADMIN",
+      prenom: "Robin",
       passwordHash: adminPasswordHash,
       role: "ADMIN",
     },
@@ -153,18 +154,20 @@ async function main() {
   console.log("✅ Utilisateur ADMIN créé:", {
     id: adminUser.id,
     email: adminUser.email,
-    name: adminUser.name,
+    nom: adminUser.nom,
+    prenom: adminUser.prenom,
     role: adminUser.role,
   });
 
   // Créer un utilisateur de test (role OUVRIER par défaut)
-  const testUserPasswordHash = await argon2.hash("bois");
+  const testUserPasswordHash = await argon2.hash("chene");
   const testUser = await prisma.user.upsert({
-    where: { email: "bucheron@mail.com" },
+    where: { email: "jean.chene@mail.com" },
     update: {},
     create: {
-      email: "bucheron@mail.com",
-      name: "Coupeur2bois",
+      email: "jean.chene@mail.com",
+      nom: "CHENE",
+      prenom: "Jean",
       passwordHash: testUserPasswordHash,
       role: "OUVRIER",
       ut: {
@@ -176,7 +179,8 @@ async function main() {
   console.log("✅ Utilisateur TEST créé:", {
     id: testUser.id,
     email: testUser.email,
-    name: testUser.name,
+    nom: testUser.nom,
+    prenom: testUser.prenom,
     role: testUser.role,
   });
 }

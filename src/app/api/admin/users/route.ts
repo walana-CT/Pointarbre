@@ -21,7 +21,8 @@ export async function GET(req: NextRequest) {
     select: {
       id: true,
       email: true,
-      name: true,
+      nom: true,
+      prenom: true,
       role: true,
       isDisabled: true,
       agenceId: true,
@@ -57,10 +58,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { email, name, password, role, agenceId, utIds } = body;
+    const { email, nom, prenom, password, role, agenceId, utIds } = body;
 
-    if (!email || !password || !role) {
-      return NextResponse.json({ error: "Email, mot de passe et rôle requis" }, { status: 400 });
+    if (!email || !nom|| !prenom || !password || !role) {
+      return NextResponse.json({ error: "Email, Nom, Prenom, mot de passe et rôle requis" }, { status: 400 });
     }
 
     // Empêcher la création d'admin
@@ -84,7 +85,8 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.create({
       data: {
         email,
-        name: name || null,
+        nom: nom,
+        prenom: prenom,
         passwordHash,
         role,
         agenceId: agenceId || null,

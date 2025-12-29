@@ -16,7 +16,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { id: idStr } = await params;
     const id = parseInt(idStr);
     const body = await req.json();
-    const { email, name, password, role, agenceId, utIds, isDisabled } = body;
+    const { email, nom, prenom, password, role, agenceId, utIds, isDisabled } = body;
 
     // Vérifier que l'utilisateur existe et n'est pas admin
     const existingUser = await prisma.user.findUnique({
@@ -46,7 +46,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const updateData: any = {};
 
     if (email !== undefined) updateData.email = email;
-    if (name !== undefined) updateData.name = name || null;
+    if (nom !== undefined) updateData.nom = nom;
+    if (prenom !== undefined) updateData.prenom = prenom;
     if (role !== undefined) updateData.role = role;
     if (isDisabled !== undefined) updateData.isDisabled = isDisabled;
     if (agenceId !== undefined) updateData.agenceId = agenceId || null;

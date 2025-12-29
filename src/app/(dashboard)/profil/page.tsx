@@ -8,7 +8,8 @@ import Link from "next/link";
 type UserProfile = {
   id: string;
   email: string;
-  name: string | null;
+  nom: string | null;
+  prenom: string | null;
   role: string;
   createdAt: string;
   isDisabled: boolean;
@@ -77,28 +78,19 @@ export default function ProfilPage() {
       <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
         {/* Avatar et nom */}
         <div className="flex items-center gap-6 mb-8 pb-6 border-b border-[var(--color-border)]">
-          <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center text-white text-3xl font-bold">
-            {(user.name?.[0] || user.email[0]).toUpperCase()}
+          <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center text-white">
+            <User size={40} />
           </div>
           <div>
-            <h2 className="text-2xl font-semibold mb-1">{user.name || "Utilisateur"}</h2>
+            <h2 className="text-2xl font-semibold mb-1">
+              {user.prenom} {user.nom}
+            </h2>
             <p className="text-[var(--color-muted)]">{roleLabels[user.role] || user.role}</p>
           </div>
         </div>
 
         {/* Informations détaillées */}
         <div className="space-y-6">
-          {/* Nom */}
-          <div className="flex items-start gap-4">
-            <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20">
-              <User size={20} className="text-blue-600 dark:text-blue-400" />
-            </div>
-            <div className="flex-1">
-              <div className="text-sm text-[var(--color-muted)] mb-1">Nom</div>
-              <div className="font-medium">{user.name || "Non renseigné"}</div>
-            </div>
-          </div>
-
           {/* Email */}
           <div className="flex items-start gap-4">
             <div className="p-2 rounded-lg bg-green-50 dark:bg-green-900/20">

@@ -7,7 +7,8 @@ import { ArrowLeft, UserPlus, X, Users, Search } from "lucide-react";
 
 interface Ouvrier {
   id: number;
-  name: string;
+  nom: string;
+  prenom: string,
   email: string;
   isDisabled: boolean;
   attributionId?: string;
@@ -102,7 +103,7 @@ export default function OuvriersPage() {
     const search = searchFilter.toLowerCase();
     return data.attributedOuvriers.filter(
       (ouvrier) =>
-        ouvrier.name?.toLowerCase().includes(search) ||
+        ouvrier.nom?.toLowerCase().includes(search) ||
         ouvrier.email?.toLowerCase().includes(search)
     );
   }, [data?.attributedOuvriers, searchFilter]);
@@ -114,7 +115,7 @@ export default function OuvriersPage() {
     const search = searchFilter.toLowerCase();
     return data.availableOuvriers.filter(
       (ouvrier) =>
-        ouvrier.name?.toLowerCase().includes(search) ||
+        ouvrier.nom?.toLowerCase().includes(search) ||
         ouvrier.email?.toLowerCase().includes(search)
     );
   }, [data?.availableOuvriers, searchFilter]);
@@ -240,7 +241,7 @@ export default function OuvriersPage() {
                 >
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: "600", marginBottom: "0.25rem" }}>
-                      {ouvrier.name || "Sans nom"}
+                      {ouvrier.nom}
                       {ouvrier.isDisabled && (
                         <span
                           style={{
@@ -321,7 +322,7 @@ export default function OuvriersPage() {
                 >
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: "600", marginBottom: "0.25rem" }}>
-                      {ouvrier.name || "Sans nom"}
+                      {ouvrier.nom}
                       {ouvrier.isDisabled && (
                         <span
                           style={{

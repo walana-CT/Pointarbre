@@ -13,7 +13,8 @@ datasource db {
 model User {
   id           Int       @id @default(autoincrement())
   email        String    @unique
-  name         String?
+  nom          String
+  prenom       String
   passwordHash String
   role         Role      @default(OUVRIER)
   isDisabled   Boolean   @default(false)

@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     if (!ok) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
 
     const { cookie } = await createSession(user.id, 60 * 60 * 24 * 7); // 7 days
-    const res = NextResponse.json({ id: user.id, email: user.email, name: user.name });
+    const res = NextResponse.json({ id: user.id, email: user.email, nom: user.nom, prenom: user.prenom });
     res.headers.set("Set-Cookie", cookie);
     return res;
   } catch (err) {

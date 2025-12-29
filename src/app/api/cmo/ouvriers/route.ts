@@ -25,7 +25,8 @@ export async function GET(req: NextRequest) {
         ouvrier: {
           select: {
             id: true,
-            name: true,
+            nom: true,
+            prenom: true,
             email: true,
             isDisabled: true,
           },
@@ -33,7 +34,7 @@ export async function GET(req: NextRequest) {
       },
       orderBy: {
         ouvrier: {
-          name: "asc",
+          nom: "asc",
         },
       },
     });
@@ -45,12 +46,13 @@ export async function GET(req: NextRequest) {
       },
       select: {
         id: true,
-        name: true,
+        nom: true,
+        prenom: true,
         email: true,
         isDisabled: true,
       },
       orderBy: {
-        name: "asc",
+        nom: "asc",
       },
     });
 
@@ -113,7 +115,8 @@ export async function POST(req: NextRequest) {
         ouvrier: {
           select: {
             id: true,
-            name: true,
+            nom: true,
+            prenom: true,
             email: true,
             isDisabled: true,
           },
