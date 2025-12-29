@@ -17,6 +17,7 @@ const config: Config = {
           muted: "#829182",
           accent: "#9fb8ad",
           success: "#1f8a3d",
+          warning: "#d97706",
           danger: "#c74641",
         },
 
@@ -30,6 +31,7 @@ const config: Config = {
           muted: "#7a8878",
           accent: "#6fa38f",
           success: "#2ea44f",
+          warning: "#f59e0b",
           danger: "#ff6b6b",
         },
 
@@ -43,6 +45,7 @@ const config: Config = {
           muted: "#666666",
           accent: "#ffb703", // yellow accent for visibility
           success: "#007a3d",
+          warning: "#b45309",
           danger: "#b00020",
         },
 

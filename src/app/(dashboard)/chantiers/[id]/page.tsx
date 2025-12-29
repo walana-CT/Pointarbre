@@ -3,7 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { Plus, ArrowLeft, ChevronRight, ChevronDown, Truck, Utensils } from "lucide-react";
+import {
+  Plus,
+  ArrowLeft,
+  ChevronRight,
+  ChevronDown,
+  Truck,
+  Utensils,
+  AlertTriangle,
+} from "lucide-react";
 
 type Phase = {
   id: string;
@@ -778,72 +786,98 @@ function RecapitulatifModal({
           <div className="space-y-4">
             {jours
               .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-              .map((jour) => (
-                <div
-                  key={jour.id}
-                  className="p-4 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)]"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold">
-                      {new Date(jour.date).toLocaleDateString("fr-FR", {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </h4>
-                    <span className="text-sm text-[var(--color-muted)]">
-                      {jour.phases.length} phase{jour.phases.length > 1 ? "s" : ""}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[var(--color-muted)]">H. Rend.:</span>
-                      <span className="font-medium">{jour.h_rendement || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[var(--color-muted)]">Loc. Mat.:</span>
-                      <span className="font-medium">{jour.location_materiel || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[var(--color-muted)]">Ind. Km:</span>
-                      <span className="font-medium">{jour.ind_kilometrique || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Truck size={16} className="text-gray-500" />
-                      <span
-                        className={jour.transport_materiel ? "text-green-600" : "text-gray-400"}
-                      >
-                        {jour.transport_materiel ? "Oui" : "Non"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Utensils size={16} className="text-gray-500" />
-                      <span className={jour.panier ? "text-green-600" : "text-gray-400"}>
-                        {jour.panier ? "Oui" : "Non"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Phases */}
-                  {jour.phases.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-[var(--color-border)]">
-                      <div className="text-sm font-medium mb-2">Phases :</div>
-                      <div className="space-y-1">
-                        {jour.phases.map((phase) => (
-                          <div key={phase.id} className="flex justify-between text-sm">
-                            <span>{phase.type}</span>
-                            <span className="font-mono text-[var(--color-muted)]">
-                              {convertDureeToHHMM(phase.duree)}
-                            </span>
-                          </div>
-                        ))}
+              .map((jour) => {
+                const totalDuration = calculateTotalDuration(jour.phases);
+                const totalHours = parseInt(totalDuration.split("h")[0]);
+                const isOvertime = totalHours >= 10;
+                return (
+                  <div
+                    key={jour.id}
+                    className="p-4 rounded-lg bg-[var(--color-bg)]"
+                    style={{
+                      border: isOvertime
+                        ? "2px solid var(--color-warning)"
+                        : "1px solid var(--color-border)",
+                    }}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-semibold">
+                        {new Date(jour.date).toLocaleDateString("fr-FR", {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </h4>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-[var(--color-muted)]">
+                          {jour.phases.length} phase{jour.phases.length > 1 ? "s" : ""}
+                        </span>
+                        <span className="text-sm font-medium">{totalDuration}</span>
+                        {isOvertime && (
+                          <span
+                            className="px-2 py-0.5 text-xs font-semibold rounded inline-flex items-center gap-1"
+                            style={{
+                              backgroundColor: "#fef3c7",
+                              color: "#92400e",
+                              border: "1px solid #fde68a",
+                            }}
+                          >
+                            <AlertTriangle className="w-3 h-3" />
+                            ≥10h
+                          </span>
+                        )}
                       </div>
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[var(--color-muted)]">H. Rend.:</span>
+                        <span className="font-medium">{jour.h_rendement || 0}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[var(--color-muted)]">Loc. Mat.:</span>
+                        <span className="font-medium">{jour.location_materiel || 0}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[var(--color-muted)]">Ind. Km:</span>
+                        <span className="font-medium">{jour.ind_kilometrique || 0}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Truck size={16} className="text-gray-500" />
+                        <span
+                          className={jour.transport_materiel ? "text-green-600" : "text-gray-400"}
+                        >
+                          {jour.transport_materiel ? "Oui" : "Non"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Utensils size={16} className="text-gray-500" />
+                        <span className={jour.panier ? "text-green-600" : "text-gray-400"}>
+                          {jour.panier ? "Oui" : "Non"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Phases */}
+                    {jour.phases.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-[var(--color-border)]">
+                        <div className="text-sm font-medium mb-2">Phases :</div>
+                        <div className="space-y-1">
+                          {jour.phases.map((phase) => (
+                            <div key={phase.id} className="flex justify-between text-sm">
+                              <span>{phase.type}</span>
+                              <span className="font-mono text-[var(--color-muted)]">
+                                {convertDureeToHHMM(phase.duree)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
           </div>
         </div>
 
@@ -1423,13 +1457,17 @@ export default function ChantierDetailPage() {
         <div className="space-y-4">
           {jours.map((jour) => {
             const isExpanded = expandedJourId === jour.id;
+            const totalDuration = calculateTotalDuration(jour.phases);
+            const totalHours = parseInt(totalDuration.split("h")[0]);
+            const isOvertime = totalHours >= 10;
             return (
               <div
                 key={jour.id}
                 className="rounded-lg border"
                 style={{
                   backgroundColor: "var(--color-surface)",
-                  borderColor: "var(--color-muted)",
+                  borderColor: isOvertime ? "var(--color-warning)" : "var(--color-muted)",
+                  borderWidth: isOvertime ? "2px" : "1px",
                 }}
               >
                 {/* En-tête de la ligne - toujours visible */}
@@ -1486,7 +1524,20 @@ export default function ChantierDetailPage() {
                         </span>
                         <span className="col-span-2">
                           <span className="font-medium text-[var(--color-text)]">Durée:</span>{" "}
-                          {calculateTotalDuration(jour.phases)}
+                          {totalDuration}
+                          {isOvertime && (
+                            <span
+                              className="ml-2 px-2 py-0.5 text-xs font-semibold rounded inline-flex items-center gap-1"
+                              style={{
+                                backgroundColor: "#fef3c7",
+                                color: "#92400e",
+                                border: "1px solid #fde68a",
+                              }}
+                            >
+                              <AlertTriangle className="w-3 h-3" />
+                              ≥10h
+                            </span>
+                          )}
                         </span>
                       </div>
                     </div>

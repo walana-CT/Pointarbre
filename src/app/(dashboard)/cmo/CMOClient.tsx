@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Download, Printer, Users } from "lucide-react";
+import { Download, Printer, Users, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 
 interface Jour {
@@ -49,46 +49,35 @@ interface OuvrierData {
   };
 }
 
-interface UT {
-  id: string;
-  number: string;
-  name: string;
-}
-
 export default function CMOClient() {
-  const [uts, setUts] = useState<UT[]>([]);
-  const [selectedUT, setSelectedUT] = useState<string>("");
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [data, setData] = useState<OuvrierData[]>([]);
   const [loading, setLoading] = useState(false);
   const [expandedOuvrier, setExpandedOuvrier] = useState<number | null>(null);
 
-  // Récupérer la liste des UTs
-  useEffect(() => {
-    fetch("/api/admin/uts")
-      .then((res) => res.json())
-      .then((data) => {
-        setUts(data);
-        if (data.length > 0) {
-          setSelectedUT(data[0].id);
-        }
-      })
-      .catch((err) => console.error("Erreur lors du chargement des UTs:", err));
-  }, []);
+  // Fonction pour calculer la durée totale d'un jour
+  const calculateTotalDuration = (phases: Phase[]): string => {
+    let totalMinutes = 0;
+    phases.forEach((phase) => {
+      const dureeDate = new Date(phase.duree);
+      totalMinutes += dureeDate.getHours() * 60 + dureeDate.getMinutes();
+    });
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours}h${minutes.toString().padStart(2, "0")}`;
+  };
 
   // Récupérer les données quand les filtres changent
   useEffect(() => {
-    if (selectedUT) {
-      fetchData();
-    }
-  }, [selectedUT, selectedMonth, selectedYear]);
+    fetchData();
+  }, [selectedMonth, selectedYear]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/cmo/chantiers?utId=${selectedUT}&month=${selectedMonth}&year=${selectedYear}`
+        `/api/cmo/chantiers?month=${selectedMonth}&year=${selectedYear}`
       );
       const result = await res.json();
       setData(result);
@@ -328,13 +317,17 @@ export default function CMOClient() {
                     <th>Transport</th>
                     <th>Panier</th>
                     <th>Phases</th>
+                    <th>Durée</th>
                   </tr>
                 </thead>
                 <tbody>
                   ${chantier.jours
-                    .map(
-                      (jour) => `
-                    <tr>
+                    .map((jour) => {
+                      const totalDuration = calculateTotalDuration(jour.phases);
+                      const totalHours = parseInt(totalDuration.split("h")[0]);
+                      const isOvertime = totalHours >= 10;
+                      return `
+                    <tr style="${isOvertime ? "background-color: #fef3c7; border: 2px solid #fde68a;" : ""}">
                       <td>${new Date(jour.date).toLocaleDateString("fr-FR")}</td>
                       <td>${jour.h_rendement || 0}</td>
                       <td>${jour.location_materiel || 0}</td>
@@ -342,9 +335,12 @@ export default function CMOClient() {
                       <td>${jour.transport_materiel ? "Oui" : "Non"}</td>
                       <td>${jour.panier ? "Oui" : "Non"}</td>
                       <td>${jour.phases.map((p) => `${p.type} (${p.duree})`).join(", ")}</td>
+                      <td style="font-weight: ${isOvertime ? "bold" : "normal"}; color: ${isOvertime ? "#92400e" : "inherit"};">
+                        ${totalDuration} ${isOvertime ? "⚠️ ≥10h" : ""}
+                      </td>
                     </tr>
-                  `
-                    )
+                  `;
+                    })
                     .join("")}
                 </tbody>
               </table>
@@ -435,28 +431,7 @@ export default function CMOClient() {
         }}
       >
         <h2 className="text-lg font-semibold mb-4">Filtres</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Filtre UT */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Unité Territoriale</label>
-            <select
-              value={selectedUT}
-              onChange={(e) => setSelectedUT(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg"
-              style={{
-                backgroundColor: "var(--color-input-bg)",
-                borderColor: "var(--color-border)",
-                color: "var(--color-text-secondary)",
-              }}
-            >
-              {uts.map((ut) => (
-                <option key={ut.id} value={ut.id}>
-                  UT {ut.number} - {ut.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Filtre Mois */}
           <div>
             <label className="block text-sm font-medium mb-2">Mois</label>
@@ -629,42 +604,67 @@ export default function CMOClient() {
 
                         {/* Liste des jours */}
                         <div className="space-y-2">
-                          {chantier.jours.map((jour) => (
-                            <div
-                              key={jour.id}
-                              className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 text-sm p-2 rounded"
-                              style={{ backgroundColor: "var(--color-surface)" }}
-                            >
-                              <div>
-                                <span className="text-[var(--color-muted)]">Date: </span>
-                                {new Date(jour.date).toLocaleDateString("fr-FR")}
+                          {chantier.jours.map((jour) => {
+                            const totalDuration = calculateTotalDuration(jour.phases);
+                            const totalHours = parseInt(totalDuration.split("h")[0]);
+                            const isOvertime = totalHours >= 10;
+                            return (
+                              <div
+                                key={jour.id}
+                                className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 text-sm p-2 rounded"
+                                style={{
+                                  backgroundColor: "var(--color-surface)",
+                                  border: isOvertime ? "2px solid var(--color-warning)" : "none",
+                                }}
+                              >
+                                <div>
+                                  <span className="text-[var(--color-muted)]">Date: </span>
+                                  {new Date(jour.date).toLocaleDateString("fr-FR")}
+                                </div>
+                                <div>
+                                  <span className="text-[var(--color-muted)]">H. Rend: </span>
+                                  {jour.h_rendement || 0}
+                                </div>
+                                <div>
+                                  <span className="text-[var(--color-muted)]">Loc: </span>
+                                  {jour.location_materiel || 0}
+                                </div>
+                                <div>
+                                  <span className="text-[var(--color-muted)]">Km: </span>
+                                  {jour.ind_kilometrique || 0}
+                                </div>
+                                <div>
+                                  <span className="text-[var(--color-muted)]">Trans: </span>
+                                  {jour.transport_materiel ? "✓" : "✗"}
+                                </div>
+                                <div>
+                                  <span className="text-[var(--color-muted)]">Panier: </span>
+                                  {jour.panier ? "✓" : "✗"}
+                                </div>
+                                <div>
+                                  <span className="text-[var(--color-muted)]">Phases: </span>
+                                  {jour.phases.length}
+                                </div>
+                                <div className="col-span-2 sm:col-span-4 lg:col-span-1 flex items-center gap-1">
+                                  <span className="text-[var(--color-muted)]">Durée: </span>
+                                  <span className="font-medium">{totalDuration}</span>
+                                  {isOvertime && (
+                                    <span
+                                      className="px-1.5 py-0.5 text-xs font-semibold rounded inline-flex items-center gap-1"
+                                      style={{
+                                        backgroundColor: "#fef3c7",
+                                        color: "#92400e",
+                                        border: "1px solid #fde68a",
+                                      }}
+                                    >
+                                      <AlertTriangle className="w-3 h-3" />
+                                      ≥10h
+                                    </span>
+                                  )}
+                                </div>
                               </div>
-                              <div>
-                                <span className="text-[var(--color-muted)]">H. Rend: </span>
-                                {jour.h_rendement || 0}
-                              </div>
-                              <div>
-                                <span className="text-[var(--color-muted)]">Loc: </span>
-                                {jour.location_materiel || 0}
-                              </div>
-                              <div>
-                                <span className="text-[var(--color-muted)]">Km: </span>
-                                {jour.ind_kilometrique || 0}
-                              </div>
-                              <div>
-                                <span className="text-[var(--color-muted)]">Trans: </span>
-                                {jour.transport_materiel ? "✓" : "✗"}
-                              </div>
-                              <div>
-                                <span className="text-[var(--color-muted)]">Panier: </span>
-                                {jour.panier ? "✓" : "✗"}
-                              </div>
-                              <div className="col-span-2 sm:col-span-4 lg:col-span-1">
-                                <span className="text-[var(--color-muted)]">Phases: </span>
-                                {jour.phases.length}
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     ))}

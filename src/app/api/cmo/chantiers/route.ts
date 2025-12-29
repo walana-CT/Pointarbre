@@ -19,13 +19,12 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const utId = searchParams.get("utId");
     const month = searchParams.get("month");
     const year = searchParams.get("year");
 
-    if (!utId || !month || !year) {
+    if (!month || !year) {
       return NextResponse.json(
-        { error: "Paramètres manquants: utId, month, year requis" },
+        { error: "Paramètres manquants: month, year requis" },
         { status: 400 }
       );
     }
@@ -37,12 +36,12 @@ export async function GET(req: NextRequest) {
     const startDate = new Date(yearNum, monthNum - 1, 1);
     const endDate = new Date(yearNum, monthNum, 0, 23, 59, 59);
 
-    // Récupérer tous les ouvriers de l'UT
+    // Récupérer tous les ouvriers gérés par ce CMO
     const ouvriers = await prisma.user.findMany({
       where: {
-        ut: {
+        workerForCmos: {
           some: {
-            id: utId,
+            cmoId: user.id,
           },
         },
         role: "OUVRIER",

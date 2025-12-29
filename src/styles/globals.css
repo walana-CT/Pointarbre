@@ -53,6 +53,7 @@
   --color-muted: #829182;
   --color-accent: #9fb8ad;
   --color-success: #1f8a3d;
+  --color-warning: #d97706;
   --color-danger: #c74641;
 }
 
@@ -66,6 +67,7 @@
   --color-muted: #829182;
   --color-accent: #9fb8ad;
   --color-success: #1f8a3d;
+  --color-warning: #d97706;
   --color-danger: #c74641;
 }
 
@@ -79,6 +81,7 @@
   --color-muted: #7a8878;
   --color-accent: #6fa38f;
   --color-success: #2ea44f;
+  --color-warning: #f59e0b;
   --color-danger: #ff6b6b;
 }
 
