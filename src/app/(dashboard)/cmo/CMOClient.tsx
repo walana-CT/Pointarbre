@@ -9,6 +9,7 @@ interface Jour {
   date: string;
   h_rendement: number | null;
   location_materiel: number | null;
+  type_location: string | null;
   ind_kilometrique: number | null;
   transport_materiel: boolean;
   panier: boolean;
@@ -56,6 +57,21 @@ export default function CMOClient() {
   const [loading, setLoading] = useState(false);
   const [expandedOuvrier, setExpandedOuvrier] = useState<number | null>(null);
 
+  // Fonction pour formater le type de location
+  const formatTypeLocation = (type: string | null): string => {
+    if (!type) return "-";
+    switch (type) {
+      case "TRONCONNEUSE_EXPLOITATION":
+        return "Tronçonneuse exploitation";
+      case "TRONCONNEUSE_SYLVICOLE":
+        return "Tronçonneuse sylvicole";
+      case "DEBROUSAILLEUSE":
+        return "Débroussailleuse";
+      default:
+        return type;
+    }
+  };
+
   // Fonction pour calculer la durée totale d'un jour
   const calculateTotalDuration = (phases: Phase[]): string => {
     let totalMinutes = 0;
@@ -102,6 +118,7 @@ export default function CMOClient() {
       "Date",
       "Heures rendement",
       "Location matériel",
+      "Type location",
       "Ind. kilométrique",
       "Transport matériel",
       "Panier repas",
@@ -125,6 +142,7 @@ export default function CMOClient() {
           new Date(jour.date).toLocaleDateString("fr-FR"),
           (jour.h_rendement || 0).toString(),
           `${jour.location_materiel || 0}h`,
+          formatTypeLocation(jour.type_location),
           (jour.ind_kilometrique || 0).toString(),
           jour.transport_materiel ? "Oui" : "Non",
           jour.panier ? "Oui" : "Non",
@@ -311,6 +329,7 @@ export default function CMOClient() {
                     <th>Date</th>
                     <th>H. Rend.</th>
                     <th>Loc. Mat.</th>
+                    <th>Type Loc.</th>
                     <th>Ind. Km</th>
                     <th>Transport</th>
                     <th>Panier</th>
@@ -329,6 +348,7 @@ export default function CMOClient() {
                       <td>${new Date(jour.date).toLocaleDateString("fr-FR")}</td>
                       <td>${jour.h_rendement || 0}</td>
                       <td>${jour.location_materiel || 0}h</td>
+                      <td>${formatTypeLocation(jour.type_location)}</td>
                       <td>${jour.ind_kilometrique || 0}</td>
                       <td>${jour.transport_materiel ? "Oui" : "Non"}</td>
                       <td>${jour.panier ? "Oui" : "Non"}</td>
@@ -611,7 +631,7 @@ export default function CMOClient() {
                             return (
                               <div
                                 key={jour.id}
-                                className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 text-sm p-2 rounded"
+                                className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-9 gap-2 text-sm p-2 rounded"
                                 style={{
                                   backgroundColor: "var(--color-surface)",
                                   border: isOvertime ? "2px solid var(--color-warning)" : "none",
@@ -628,6 +648,10 @@ export default function CMOClient() {
                                 <div>
                                   <span className="text-[var(--color-muted)]">Loc: </span>
                                   {jour.location_materiel || 0}h
+                                </div>
+                                <div>
+                                  <span className="text-[var(--color-muted)]">Type: </span>
+                                  {formatTypeLocation(jour.type_location)}
                                 </div>
                                 <div>
                                   <span className="text-[var(--color-muted)]">Km: </span>

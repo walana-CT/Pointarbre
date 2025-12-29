@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -24,6 +24,7 @@ type Jour = {
   date: string;
   h_rendement: number | null;
   location_materiel: number | null;
+  type_location: string | null;
   ind_kilometrique: number | null;
   transport_materiel: boolean;
   panier: boolean;
@@ -88,6 +89,21 @@ function convertDureeToHHMM(duree: string): string {
   const hours = dureeDate.getHours();
   const minutes = dureeDate.getMinutes();
   return formatDuration(hours.toString(), minutes.toString());
+}
+
+// Utilitaire pour formater le type de location
+function formatTypeLocation(type: string | null): string {
+  if (!type) return "";
+  switch (type) {
+    case "TRONCONNEUSE_EXPLOITATION":
+      return "Tronçonneuse exploitation";
+    case "TRONCONNEUSE_SYLVICOLE":
+      return "Tronçonneuse sylvicole";
+    case "DEBROUSAILLEUSE":
+      return "Débroussailleuse";
+    default:
+      return type;
+  }
 }
 
 // Composant pour le formulaire d'ajout de phase (jours existants)
@@ -187,12 +203,17 @@ function JourFormFields({
   defaultValues?: {
     h_rendement?: number | null;
     location_materiel?: number | null;
+    type_location?: string | null;
     ind_kilometrique?: number | null;
     transport_materiel?: boolean;
     panier?: boolean;
   };
   disabled?: boolean;
 }) {
+  const [locationValue, setLocationValue] = React.useState<number>(
+    defaultValues?.location_materiel || 0
+  );
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {showDate && (
@@ -233,7 +254,7 @@ function JourFormFields({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Location matériel</label>
+        <label className="block text-sm font-medium mb-1">Location matériel (heures)</label>
         <input
           type="number"
           name="location_materiel"
@@ -241,6 +262,7 @@ function JourFormFields({
           placeholder="0"
           defaultValue={defaultValues?.location_materiel || ""}
           disabled={disabled}
+          onChange={(e) => setLocationValue(parseInt(e.target.value) || 0)}
           className={`w-full px-3 py-2 rounded-lg border ${
             disabled ? "opacity-60 cursor-not-allowed" : ""
           }`}
@@ -250,6 +272,29 @@ function JourFormFields({
           }}
         />
       </div>
+      {locationValue > 0 && (
+        <div>
+          <label className="block text-sm font-medium mb-1">Type de location *</label>
+          <select
+            name="type_location"
+            defaultValue={defaultValues?.type_location || ""}
+            disabled={disabled}
+            required
+            className={`w-full px-3 py-2 rounded-lg border ${
+              disabled ? "opacity-60 cursor-not-allowed" : ""
+            }`}
+            style={{
+              backgroundColor: "var(--color-bg)",
+              borderColor: "var(--color-muted)",
+            }}
+          >
+            <option value="">Sélectionner un type</option>
+            <option value="TRONCONNEUSE_EXPLOITATION">Tronçonneuse exploitation</option>
+            <option value="TRONCONNEUSE_SYLVICOLE">Tronçonneuse sylvicole</option>
+            <option value="DEBROUSAILLEUSE">Débroussailleuse</option>
+          </select>
+        </div>
+      )}
       <div>
         <label className="block text-sm font-medium mb-1">Ind. kilométrique</label>
         <input
@@ -669,6 +714,16 @@ function RecapitulatifModal({
                   <div class="detail-label">Loc. Matériel</div>
                   <strong>${jour.location_materiel || 0}h</strong>
                 </div>
+                ${
+                  jour.location_materiel && jour.location_materiel > 0
+                    ? `
+                <div class="detail-item">
+                  <div class="detail-label">Type Loc.</div>
+                  <strong>${formatTypeLocation(jour.type_location)}</strong>
+                </div>
+                `
+                    : ""
+                }
                 <div class="detail-item">
                   <div class="detail-label">Ind. Km</div>
                   <strong>${jour.ind_kilometrique || 0}</strong>
@@ -725,65 +780,74 @@ function RecapitulatifModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4"
       onClick={onClose}
     >
       <div
-        className="bg-[var(--color-surface)] rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+        className="bg-[var(--color-surface)] rounded-lg shadow-xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="p-6 border-b border-[var(--color-border)]">
-          <h2 className="text-2xl font-bold mb-2">Récapitulatif du chantier</h2>
-          <div className="text-sm text-[var(--color-muted)]">
-            <p>
-              <strong>Chantier :</strong> {chantier.foret} - {chantier.triage} - {chantier.parcelle}
-            </p>
-            <p>
-              <strong>Début :</strong> {new Date(chantier.date_debut).toLocaleDateString("fr-FR")}
-            </p>
-            <p className="text-red-600 font-semibold mt-2">
-              ⚠️ Attention : Une fois validé, le chantier ne pourra plus être modifié
-            </p>
+        {/* Tout le contenu scrollable */}
+        <div className="p-3 sm:p-6">
+          {/* Header */}
+          <div className="mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold mb-2">Récapitulatif du chantier</h2>
+            <div className="text-xs sm:text-sm text-[var(--color-muted)]">
+              <p>
+                <strong>Chantier :</strong> {chantier.foret} - {chantier.triage} -{" "}
+                {chantier.parcelle}
+              </p>
+              <p>
+                <strong>Début :</strong> {new Date(chantier.date_debut).toLocaleDateString("fr-FR")}
+              </p>
+              <p className="text-red-600 font-semibold mt-2 text-xs sm:text-sm">
+                ⚠️ Attention : Une fois validé, le chantier ne pourra plus être modifié
+              </p>
+            </div>
           </div>
-        </div>
 
-        {/* Body - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-6">
           {/* Totaux */}
-          <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-            <h3 className="font-semibold mb-3 text-lg">Totaux</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+          <div className="mb-3 sm:mb-6 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <h3 className="font-semibold mb-2 sm:mb-3 text-base sm:text-lg">Totaux</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm">
               <div>
                 <div className="text-[var(--color-muted)]">Jours travaillés</div>
-                <div className="text-xl font-bold text-blue-600">{totaux.jours}</div>
+                <div className="text-lg sm:text-xl font-bold text-blue-600">{totaux.jours}</div>
               </div>
               <div>
                 <div className="text-[var(--color-muted)]">Heures rendement</div>
-                <div className="text-xl font-bold text-blue-600">{totaux.heuresRendement}</div>
+                <div className="text-lg sm:text-xl font-bold text-blue-600">
+                  {totaux.heuresRendement}
+                </div>
               </div>
               <div>
                 <div className="text-[var(--color-muted)]">Location matériel</div>
-                <div className="text-xl font-bold text-blue-600">{totaux.locationMateriel}h</div>
+                <div className="text-lg sm:text-xl font-bold text-blue-600">
+                  {totaux.locationMateriel}h
+                </div>
               </div>
               <div>
                 <div className="text-[var(--color-muted)]">Ind. kilométrique</div>
-                <div className="text-xl font-bold text-blue-600">{totaux.indKilometrique}</div>
+                <div className="text-lg sm:text-xl font-bold text-blue-600">
+                  {totaux.indKilometrique}
+                </div>
               </div>
               <div>
                 <div className="text-[var(--color-muted)]">Transport matériel</div>
-                <div className="text-xl font-bold text-blue-600">{totaux.transportMateriel}</div>
+                <div className="text-lg sm:text-xl font-bold text-blue-600">
+                  {totaux.transportMateriel}
+                </div>
               </div>
               <div>
                 <div className="text-[var(--color-muted)]">Paniers repas</div>
-                <div className="text-xl font-bold text-blue-600">{totaux.panier}</div>
+                <div className="text-lg sm:text-xl font-bold text-blue-600">{totaux.panier}</div>
               </div>
             </div>
           </div>
 
           {/* Liste des jours */}
-          <h3 className="font-semibold mb-3 text-lg">Détail des jours</h3>
-          <div className="space-y-4">
+          <h3 className="font-semibold mb-2 sm:mb-3 text-base sm:text-lg">Détail des jours</h3>
+          <div className="space-y-2 sm:space-y-4">
             {jours
               .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
               .map((jour) => {
@@ -837,8 +901,16 @@ function RecapitulatifModal({
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-[var(--color-muted)]">Loc. Mat.:</span>
-                        <span className="font-medium">{jour.location_materiel || 0}</span>
+                        <span className="font-medium">{jour.location_materiel || 0}h</span>
                       </div>
+                      {jour.location_materiel && jour.location_materiel > 0 && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-[var(--color-muted)]">Type Loc.:</span>
+                          <span className="font-medium">
+                            {formatTypeLocation(jour.type_location)}
+                          </span>
+                        </div>
+                      )}
                       <div className="flex items-center gap-2">
                         <span className="text-[var(--color-muted)]">Ind. Km:</span>
                         <span className="font-medium">{jour.ind_kilometrique || 0}</span>
@@ -879,21 +951,18 @@ function RecapitulatifModal({
                 );
               })}
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="p-6 border-t border-[var(--color-border)] bg-[var(--color-surface)]">
           {/* Certification */}
-          <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-            <label className="flex items-start gap-3 cursor-pointer">
+          <div className="mt-6 mb-4 p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <label className="flex items-start gap-2 sm:gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={certificationChecked}
                 onChange={(e) => onCertificationChange(e.target.checked)}
-                className="mt-1"
+                className="mt-1 flex-shrink-0"
                 style={{ accentColor: "#3b82f6" }}
               />
-              <span className="text-sm">
+              <span className="text-xs sm:text-sm">
                 Je certifie avoir vérifié l'ensemble de ma saisie et être conscient(e) que ce
                 chantier ne pourra plus être modifié une fois validé.
               </span>
@@ -901,10 +970,10 @@ function RecapitulatifModal({
           </div>
 
           {/* Boutons */}
-          <div className="flex gap-3 justify-between">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-between pb-2">
             <button
               onClick={handleExportPDF}
-              className="btn-secondary px-6 py-2 flex items-center gap-2"
+              className="btn-secondary px-4 sm:px-6 py-2 flex items-center gap-2 justify-center text-sm sm:text-base"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -923,14 +992,17 @@ function RecapitulatifModal({
               </svg>
               Exporter en PDF
             </button>
-            <div className="flex gap-3">
-              <button onClick={onClose} className="btn-secondary px-6 py-2">
+            <div className="flex gap-2 sm:gap-3">
+              <button
+                onClick={onClose}
+                className="btn-secondary px-4 sm:px-6 py-2 flex-1 sm:flex-none text-sm sm:text-base"
+              >
                 Retour
               </button>
               <button
                 onClick={onConfirm}
                 disabled={!certificationChecked}
-                className="btn-primary px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary px-4 sm:px-6 py-2 flex-1 sm:flex-none disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               >
                 Confirmer et finaliser
               </button>
@@ -1050,12 +1122,14 @@ export default function ChantierDetailPage() {
     if (form) {
       const hRendementInput = form.elements.namedItem("h_rendement") as HTMLInputElement;
       const locationInput = form.elements.namedItem("location_materiel") as HTMLInputElement;
+      const typeLocationInput = form.elements.namedItem("type_location") as HTMLSelectElement;
       const indKmInput = form.elements.namedItem("ind_kilometrique") as HTMLInputElement;
       const transportInput = form.elements.namedItem("transport_materiel") as HTMLInputElement;
       const panierInput = form.elements.namedItem("panier") as HTMLInputElement;
 
       if (hRendementInput) hRendementInput.value = lastJour.h_rendement?.toString() || "";
       if (locationInput) locationInput.value = lastJour.location_materiel?.toString() || "";
+      if (typeLocationInput) typeLocationInput.value = lastJour.type_location || "";
       if (indKmInput) indKmInput.value = lastJour.ind_kilometrique?.toString() || "";
       if (transportInput) transportInput.checked = lastJour.transport_materiel;
       if (panierInput) panierInput.checked = lastJour.panier;
@@ -1094,6 +1168,7 @@ export default function ChantierDetailPage() {
           date: formData.get("date"),
           h_rendement: formData.get("h_rendement"),
           location_materiel: formData.get("location_materiel"),
+          type_location: formData.get("type_location") || null,
           ind_kilometrique: formData.get("ind_kilometrique"),
           transport_materiel: formData.get("transport_materiel") === "on",
           panier: formData.get("panier") === "on",
@@ -1129,6 +1204,7 @@ export default function ChantierDetailPage() {
         body: JSON.stringify({
           h_rendement: formData.get("h_rendement"),
           location_materiel: formData.get("location_materiel"),
+          type_location: formData.get("type_location") || null,
           ind_kilometrique: formData.get("ind_kilometrique"),
           transport_materiel: formData.get("transport_materiel") === "on",
           panier: formData.get("panier") === "on",
@@ -1580,6 +1656,7 @@ export default function ChantierDetailPage() {
                         defaultValues={{
                           h_rendement: jour.h_rendement,
                           location_materiel: jour.location_materiel,
+                          type_location: jour.type_location,
                           ind_kilometrique: jour.ind_kilometrique,
                           transport_materiel: jour.transport_materiel,
                           panier: jour.panier,

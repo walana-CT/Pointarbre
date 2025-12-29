@@ -63,6 +63,12 @@ enum Role {
   OUVRIER
 }
 
+enum TypeLocation {
+  TRONCONNEUSE_EXPLOITATION
+  TRONCONNEUSE_SYLVICOLE
+  DEBROUSAILLEUSE
+}
+
 model Agence {
   id    String @id @default(cuid())
   name  String
@@ -137,6 +143,7 @@ model Jour {
   date               DateTime
   h_rendement        Int?
   location_materiel  Int?
+  type_location      TypeLocation?
   ind_kilometrique   Int?
   transport_materiel Boolean
   panier             Boolean

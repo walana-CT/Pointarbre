@@ -78,8 +78,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     const body = await req.json();
-    const { date, h_rendement, location_materiel, ind_kilometrique, transport_materiel, panier } =
-      body;
+    const {
+      date,
+      h_rendement,
+      location_materiel,
+      type_location,
+      ind_kilometrique,
+      transport_materiel,
+      panier,
+    } = body;
 
     // Validation basique
     if (!date) {
@@ -104,6 +111,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         date: new Date(date),
         h_rendement: h_rendement ? parseInt(h_rendement) : null,
         location_materiel: location_materiel ? parseInt(location_materiel) : null,
+        type_location: type_location || null,
         ind_kilometrique: ind_kilometrique ? parseInt(ind_kilometrique) : null,
         transport_materiel: transport_materiel === true || transport_materiel === "true",
         panier: panier === true || panier === "true",
