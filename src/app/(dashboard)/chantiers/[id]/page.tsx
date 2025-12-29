@@ -627,7 +627,7 @@ function RecapitulatifModal({
               </div>
               <div class="totaux-item">
                 <div class="totaux-label">Location matériel</div>
-                <div class="totaux-value">${totaux.locationMateriel}</div>
+                <div class="totaux-value">${totaux.locationMateriel}h</div>
               </div>
               <div class="totaux-item">
                 <div class="totaux-label">Ind. kilométrique</div>
@@ -667,7 +667,7 @@ function RecapitulatifModal({
                 </div>
                 <div class="detail-item">
                   <div class="detail-label">Loc. Matériel</div>
-                  <strong>${jour.location_materiel || 0}</strong>
+                  <strong>${jour.location_materiel || 0}h</strong>
                 </div>
                 <div class="detail-item">
                   <div class="detail-label">Ind. Km</div>
@@ -764,7 +764,7 @@ function RecapitulatifModal({
               </div>
               <div>
                 <div className="text-[var(--color-muted)]">Location matériel</div>
-                <div className="text-xl font-bold text-blue-600">{totaux.locationMateriel}</div>
+                <div className="text-xl font-bold text-blue-600">{totaux.locationMateriel}h</div>
               </div>
               <div>
                 <div className="text-[var(--color-muted)]">Ind. kilométrique</div>
@@ -1512,7 +1512,7 @@ export default function ChantierDetailPage() {
                         </span>
                         <span>
                           <span className="font-medium text-[var(--color-text)]">Location:</span>{" "}
-                          {jour.location_materiel ?? 0}€
+                          {jour.location_materiel ?? 0}h
                         </span>
                         <span>
                           <span className="font-medium text-[var(--color-text)]">Km:</span>{" "}

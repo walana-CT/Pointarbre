@@ -76,9 +76,7 @@ export default function CMOClient() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(
-        `/api/cmo/chantiers?month=${selectedMonth}&year=${selectedYear}`
-      );
+      const res = await fetch(`/api/cmo/chantiers?month=${selectedMonth}&year=${selectedYear}`);
       const result = await res.json();
       setData(result);
     } catch (error) {
@@ -126,7 +124,7 @@ export default function CMOClient() {
           chantier.parcelle,
           new Date(jour.date).toLocaleDateString("fr-FR"),
           (jour.h_rendement || 0).toString(),
-          (jour.location_materiel || 0).toString(),
+          `${jour.location_materiel || 0}h`,
           (jour.ind_kilometrique || 0).toString(),
           jour.transport_materiel ? "Oui" : "Non",
           jour.panier ? "Oui" : "Non",
@@ -148,7 +146,7 @@ export default function CMOClient() {
       "",
       `${ouvrierData.totaux.jours} jours`,
       ouvrierData.totaux.heuresRendement.toString(),
-      ouvrierData.totaux.locationMateriel.toString(),
+      `${ouvrierData.totaux.locationMateriel}h`,
       ouvrierData.totaux.indKilometrique.toString(),
       ouvrierData.totaux.transportMateriel.toString(),
       ouvrierData.totaux.panier.toString(),
@@ -330,7 +328,7 @@ export default function CMOClient() {
                     <tr style="${isOvertime ? "background-color: #fef3c7; border: 2px solid #fde68a;" : ""}">
                       <td>${new Date(jour.date).toLocaleDateString("fr-FR")}</td>
                       <td>${jour.h_rendement || 0}</td>
-                      <td>${jour.location_materiel || 0}</td>
+                      <td>${jour.location_materiel || 0}h</td>
                       <td>${jour.ind_kilometrique || 0}</td>
                       <td>${jour.transport_materiel ? "Oui" : "Non"}</td>
                       <td>${jour.panier ? "Oui" : "Non"}</td>
@@ -362,7 +360,7 @@ export default function CMOClient() {
               </div>
               <div class="totaux-item">
                 <div class="totaux-label">Location matériel</div>
-                <div class="totaux-value">${ouvrierData.totaux.locationMateriel}</div>
+                <div class="totaux-value">${ouvrierData.totaux.locationMateriel}h</div>
               </div>
               <div class="totaux-item">
                 <div class="totaux-label">Ind. kilométrique</div>
@@ -566,7 +564,9 @@ export default function CMOClient() {
                     </div>
                     <div>
                       <div className="text-xs text-[var(--color-muted)]">Loc. Matériel</div>
-                      <div className="text-xl font-bold">{ouvrierData.totaux.locationMateriel}</div>
+                      <div className="text-xl font-bold">
+                        {ouvrierData.totaux.locationMateriel}h
+                      </div>
                     </div>
                     <div>
                       <div className="text-xs text-[var(--color-muted)]">Ind. Km</div>
@@ -627,7 +627,7 @@ export default function CMOClient() {
                                 </div>
                                 <div>
                                   <span className="text-[var(--color-muted)]">Loc: </span>
-                                  {jour.location_materiel || 0}
+                                  {jour.location_materiel || 0}h
                                 </div>
                                 <div>
                                   <span className="text-[var(--color-muted)]">Km: </span>
